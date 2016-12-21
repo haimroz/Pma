@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using Newtonsoft.Json;
 using PmaEntities;
+using System.Globalization;
 
 namespace ParseLogs
 {
@@ -64,7 +65,7 @@ namespace ParseLogs
         {
             PmaRawEntity pmaRawEntity = new PmaRawEntity
             {
-                TimeStamp = Convert.ToDateTime(pmaLogData[headers[TimeStampHeader]]),
+                TimeStamp = Convert.ToDateTime(pmaLogData[headers[TimeStampHeader]], CultureInfo.InvariantCulture),
                 ProtectedVolumeWriteRateMbs = Convert.ToDouble(pmaLogData[headers[ProtectedVolumeWriteRateMBsHeader]]),
                 ProtectedVolumeCompressedWriteRateMBs = Convert.ToDouble(pmaLogData[headers[ProtectedVolumeCompressedWriteRateMBsHeader]]),
                 ProtectedCpuPerc = Convert.ToInt32(Convert.ToDouble(pmaLogData[headers[VraCpuPercHeader]])),

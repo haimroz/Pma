@@ -22,5 +22,26 @@ namespace PmaEntities
         public double HardeningRateMBs { get; set; }
         public double JournalSizeMB { get; set; }
         public double ApplyRateMBs { get; set; }
+
+
+        public PmaRawEntity()
+        {
+        }
+        public PmaRawEntity(PmaRawEntity obj)
+        {
+            TimeStamp = obj.TimeStamp;
+            ProtectedVolumeWriteRateMbs = obj.ProtectedVolumeWriteRateMbs;
+            ProtectedVolumeCompressedWriteRateMBs = obj.ProtectedVolumeCompressedWriteRateMBs;
+            ProtectedCpuPerc = obj.ProtectedCpuPerc;
+            ProtectedVraBufferUsagePerc = obj.ProtectedVraBufferUsagePerc;
+            ProtectedTcpBufferUsagePerc = obj.ProtectedTcpBufferUsagePerc;
+            NetworkOutgoingRateMBs = obj.NetworkOutgoingRateMBs;
+            RecoveryTcpBufferUsagePerc = obj.RecoveryTcpBufferUsagePerc;
+            RecoveryCpuPerc = obj.RecoveryCpuPerc;
+            RecoveryVraBufferUsagePerc = obj.RecoveryVraBufferUsagePerc;
+            HardeningRateMBs = obj.HardeningRateMBs;
+            JournalSizeMB = obj.JournalSizeMB;
+            ApplyRateMBs = obj.ApplyRateMBs;
+        }
     }
 }
