@@ -1,14 +1,21 @@
-﻿namespace PmaEntities
+﻿using System;
+
+namespace PmaEntities
 {
     public class PmaRawEntity
     {
-        public double ProtectedVolumeWriteRate { get; set; }
-        public int ProtectedVraBufferUsage { get; set; }
-        public int ProtectedTcpBufferUsage { get; set; }
-        public double NetworkOutgoingRate { get; set; }
-        public int RecoveryTcpBufferUsage { get; set; }
-        public int RecoveryVraBufferUsage { get; set; }
-        public double HardeningRate { get; set; }
-        public double ApplyRate { get; set; }
+        public DateTime TimeStamp { get; set; }
+        public double ProtectedVolumeWriteRateMbs { get; set; }
+        public double ProtectedVolumeCompressedWriteRateMBs { get; set; }
+        public double ProtectedCpuPerc { get; set; }
+        public int ProtectedVraBufferUsagePerc { get; set; }
+        public int ProtectedTcpBufferUsagePerc { get; set; }
+        public double NetworkOutgoingRateMBs { get; set; }
+        public int RecoveryTcpBufferUsagePerc { get; set; }
+        public double RecoveryCpuPerc { get; set; }
+        public int RecoveryVraBufferUsagePerc { get; set; }
+        public double HardeningRateMBs { get; set; }
+        public double JournalSizeMB { get; set; }
+        public double ApplyRateMBs { get; set; }
     }
 }
