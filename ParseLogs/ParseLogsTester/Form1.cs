@@ -20,8 +20,8 @@ namespace ParseLogsTester
 
         private void btnParse_Click(object sender, EventArgs e)
         {
-            LogParser logParser = new LogParser();
-            logParser.Parse(txtLogFile.Text, "");
+            PmaLogProcessor logProcessor = new PmaLogProcessor();
+            logProcessor.ProcessLogs(txtProtectedLogFile.Text, txtRecoveryLogFile.Text);
         }
     }
 }

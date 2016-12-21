@@ -44,7 +44,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="LogParser.cs" />
+    <Compile Include="PmaLogParser.cs" />
+    <Compile Include="PmaLogProcessor.cs" />
+    <Compile Include="PmaRawEntitiesInterpulator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

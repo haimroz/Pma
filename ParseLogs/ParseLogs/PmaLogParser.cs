@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using System.IO;
 using System.Linq;
+using System.Net;
+using Newtonsoft.Json;
 using PmaEntities;
 
 namespace ParseLogs
 {
-    public class LogParser
+    public class PmaLogParser
     {
         private const string TimeStampHeader = "Time";
         private const string ProtectedVolumeWriteRateMBsHeader = "Write IOs rate (MBps) (zvm)";
@@ -21,15 +23,16 @@ namespace ParseLogs
         private const string HardeningRateMBsHeader = "Harden rate (MBps) (zvm)";
         private const string JournalSizeMBHeader = "";
         private const string ApplyRateMBsHeader = "Apply rate (MBps) (zvm)";
-        public LogParser()
-        { }
-        public void Parse(string protectedLogFileName, string recoveryLogFileName)
+
+        public List<PmaRawEntity> Parse(string logFileName)
         {
-            JObject protectedLogJObject = JObject.Parse(File.ReadAllText(protectedLogFileName));
+            JObject protectedLogJObject = JObject.Parse(File.ReadAllText(logFileName));
             List<string> headersList = (List<string>)protectedLogJObject["headers"].ToObject(typeof(List<string>));
             Dictionary<string, int> headers = BuildHeadersDictionary(headersList);
 
-            List<PmaRawEntity> pamEntities = BuildPmaEntities(protectedLogJObject, headers);
+            List<PmaRawEntity> pmaEntities = BuildPmaEntities(protectedLogJObject, headers);
+
+            return pmaEntities;
         }
 
         private Dictionary<string, int> BuildHeadersDictionary(List<string> headers)
@@ -46,20 +49,25 @@ namespace ParseLogs
 
         private List<PmaRawEntity> BuildPmaEntities(JObject logJObject, Dictionary<string, int> headers)
         {
-            //return GenerateDummyPmaData(100);
+            return GenerateDummyPmaData(100);
 
-            List<PmaRawEntity> pmaRawEntities = new List<PmaRawEntity>();
-            for (int dataIndex = 0; dataIndex < logJObject["data"].Count(); dataIndex++)
-            {
-                PmaRawEntity pmaRawEntity = new PmaRawEntity();
-                List<string> data = (List<string>)logJObject["data"][dataIndex].ToObject(typeof(List<string>));
+            //List<PmaRawEntity> pmaRawEntities = new List<PmaRawEntity>();
+            //for (int dataIndex = 0; dataIndex < logJObject["data"].Count(); dataIndex++)
+            //{
+            //    List<string> pmaLogData = (List<string>)logJObject["data"][dataIndex].ToObject(typeof(List<string>));
 
-            }
+            //}
 
-            return pmaRawEntities;
+            //return pmaRawEntities;
         }
 
-
+        private PmaRawEntity BuildPmaEntity(string[] pmaLogData, Dictionary<string, int> headers)
+        {
+            PmaRawEntity pmaRawEntity = new PmaRawEntity();
+            pmaRawEntity.TimeStamp = Convert.ToDateTime(pmaLogData[headers[TimeStampHeader]]);
+         //   pmaRawEntity.
+            return pmaRawEntity;
+        }
 
 
 

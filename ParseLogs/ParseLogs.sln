@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParseLogs", "ParseLogs\ParseLogs.csproj", "{89861FC1-EFDF-4B5A-A5E9-6407B29B0EEF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PmaLogProcessor", "ParseLogs\PmaLogProcessor.csproj", "{89861FC1-EFDF-4B5A-A5E9-6407B29B0EEF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParseLogsTester", "ParseLogsTester\ParseLogsTester.csproj", "{E604D769-7FE0-404C-BBCC-FFBFE9CAC651}"
 EndProject
