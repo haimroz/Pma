@@ -58,7 +58,7 @@ namespace Ppa.Services
             List<PmaRawEntity> pmaRawEntities = new List<PmaRawEntity>();
             using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
-                string queryString = "SELECT * FROM PmaRawData WHERE TimeStamp Between @from and @to ";
+                string queryString = "SELECT distinct * FROM PmaRawData WHERE TimeStamp Between @from and @to ";
                 //string queryString = "SELECT * FROM PmaRawData";
                 SqlCommand command = new SqlCommand(queryString, connection);
                 command.Parameters.AddWithValue("@from", ConvertMinMaxSqlDateTimeToDateTime(from));
