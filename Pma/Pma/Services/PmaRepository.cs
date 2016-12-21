@@ -221,9 +221,17 @@ namespace Ppa.Services
             {
                 threshold = 1000;
                 isValid = 1;
+                if ((double)value <= 0)
+                {
+                    value = 0.0;
+                }
             }
             else if (value.GetType() == typeof (int))
             {
+                if ((int)value <= 0)
+                {
+                    value = 0;
+                }
                 threshold = 80;
                 isValid = Convert.ToInt32(value) < 80 ? 0 : 1;
             }
