@@ -95,6 +95,142 @@ namespace Ppa.Services
             }
         }
 
+        public PmaRawEntityWithLimit[] GetFilteredData1(DateTime from, DateTime to)
+        {
+            List<PmaRawEntityWithLimit> pmaRawEntities = new List<PmaRawEntityWithLimit>();
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            {
+                //string queryString = "SELECT distinct * FROM PmaRawData WHERE TimeStamp Between @from and @to ";
+                string queryString = "SELECT top (1) * FROM PmaRawData WHERE TimeStamp Between @from and @to ";
+                //string queryString = "SELECT * FROM PmaRawData";
+                SqlCommand command = new SqlCommand(queryString, connection);
+                command.Parameters.AddWithValue("@from", ConvertMinMaxSqlDateTimeToDateTime(from));
+                command.Parameters.AddWithValue("@to", ConvertMinMaxSqlDateTimeToDateTime(to));
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+                try
+                {
+                    while (reader.Read())
+                    {
+                        var pmaRawEntity = new PmaRawEntityWithLimit();
+                        pmaRawEntity.TimeStamp = (DateTime)reader["TimeStamp"];
+
+                        pmaRawEntity.ApplyRateMBs = GetDouble(reader, "ApplyRateMBs");
+                        pmaRawEntity.ApplyRateMBs_PassThres = pmaRawEntity.ApplyRateMBs < 80 ? 0 : 1;
+
+                        pmaRawEntity.HardeningRateMBs = GetDouble(reader, "HardeningRateMBs");
+                        pmaRawEntity.HardeningRateMBs_PassThres = pmaRawEntity.HardeningRateMBs < 80 ? 0 : 1;
+
+                        pmaRawEntity.JournalSizeMB = GetDouble(reader, "JournalSizeMB");
+                        pmaRawEntity.JournalSizeMB_PassThres = pmaRawEntity.JournalSizeMB < 80 ? 0 : 1;
+
+                        pmaRawEntity.NetworkOutgoingRateMBs = GetDouble(reader, "NetworkOutgoingRateMBs");
+                        pmaRawEntity.NetworkOutgoingRateMBs_PassThres = pmaRawEntity.NetworkOutgoingRateMBs < 80 ? 0 : 1;
+
+                        pmaRawEntity.ProtectedCpuPerc = GetInt(reader, "ProtectedCpuPerc");
+                        pmaRawEntity.ProtectedCpuPerc_PassThres = pmaRawEntity.ProtectedCpuPerc < 80 ? 0 : 1;
+
+                        pmaRawEntity.ProtectedTcpBufferUsagePerc = GetInt(reader, "ProtectedTcpBufferUsagePerc");
+                        pmaRawEntity.ProtectedTcpBufferUsagePerc_PassThres = pmaRawEntity.ProtectedTcpBufferUsagePerc < 80 ? 0 : 1;
+
+                        pmaRawEntity.ProtectedVolumeCompressedWriteRateMBs = GetDouble(reader, "ProtectedVolumeCompressedWriteRateMBs");
+                        pmaRawEntity.ProtectedVolumeCompressedWriteRateMBs = pmaRawEntity.ProtectedVolumeCompressedWriteRateMBs < 80 ? 0 : 1;
+
+                        pmaRawEntity.ProtectedVolumeWriteRateMbs = GetDouble(reader, "ProtectedVolumeWriteRateMbs");
+                        pmaRawEntity.ProtectedVolumeWriteRateMbs_PassThres = pmaRawEntity.ProtectedVolumeWriteRateMbs < 80 ? 0 : 1;
+
+                        pmaRawEntity.ProtectedVraBufferUsagePerc = GetInt(reader, "ProtectedVraBufferUsagePerc");
+                        pmaRawEntity.ProtectedVraBufferUsagePerc_PassThres = pmaRawEntity.ProtectedVraBufferUsagePerc < 80 ? 0 : 1;
+
+                        pmaRawEntity.RecoveryCpuPerc = GetInt(reader, "RecoveryCpuPerc");
+                        pmaRawEntity.RecoveryCpuPerc_PassThres = pmaRawEntity.RecoveryCpuPerc < 80 ? 0 : 1;
+
+                        pmaRawEntity.RecoveryVraBufferUsagePerc = GetInt(reader, "RecoveryVraBufferUsagePerc");
+                        pmaRawEntity.RecoveryVraBufferUsagePerc_PassThres = pmaRawEntity.RecoveryVraBufferUsagePerc < 80 ? 0 : 1;
+
+                        pmaRawEntity.RecoveryTcpBufferUsagePerc = GetInt(reader, "RecoveryTcpBufferUsagePerc");
+                        pmaRawEntity.RecoveryTcpBufferUsagePerc = pmaRawEntity.RecoveryTcpBufferUsagePerc < 80 ? 0 : 1;
+
+                        pmaRawEntity.IsTimeStampValid = 1;
+
+                        pmaRawEntities.Add(pmaRawEntity);
+                    }
+                    return pmaRawEntities.ToArray();
+                }
+                finally
+                {
+                    // Always call Close when done reading.
+                    reader.Close();
+                }
+            }
+        }
+
+        public PmaTimstampData[] GetFilteredData2(DateTime from, DateTime to)
+        {
+            List<PmaTimstampData> pmaRawEntities = new List<PmaTimstampData>();
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            {
+                string queryString = "SELECT distinct * FROM PmaRawData WHERE TimeStamp Between @from and @to ";
+                //string queryString = "SELECT top (1) * FROM PmaRawData WHERE TimeStamp Between @from and @to ";
+                //string queryString = "SELECT * FROM PmaRawData";
+                SqlCommand command = new SqlCommand(queryString, connection);
+                command.Parameters.AddWithValue("@from", ConvertMinMaxSqlDateTimeToDateTime(from));
+                command.Parameters.AddWithValue("@to", ConvertMinMaxSqlDateTimeToDateTime(to));
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+                try
+                {
+                    while (reader.Read())
+                    {
+                        var timstampData = new PmaTimstampData();
+                        timstampData.IsValid = 1;
+                        timstampData.PmaRawFieldList = new List<PmaRawFieldData>();
+                        timstampData.TimeStamp = (DateTime)reader["TimeStamp"];
+
+                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "ApplyRateMBs"));
+                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "HardeningRateMBs"));
+                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "JournalSizeMB"));
+                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "NetworkOutgoingRateMBs"));
+                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "ProtectedCpuPerc"));
+                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "ProtectedTcpBufferUsagePerc"));
+                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "ProtectedVolumeCompressedWriteRateMBs"));
+                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "ProtectedVolumeWriteRateMbs"));
+                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "ProtectedVraBufferUsagePerc"));
+                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "RecoveryCpuPerc"));
+                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "RecoveryVraBufferUsagePerc"));
+                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "RecoveryTcpBufferUsagePerc"));
+
+                        pmaRawEntities.Add(timstampData);
+                    }
+                    return pmaRawEntities.ToArray();
+                }
+                finally
+                {
+                    // Always call Close when done reading.
+                    reader.Close();
+                }
+            }
+        }
+
+        private static PmaRawFieldData ConstructFieldData(SqlDataReader reader, string fieldName)
+        {
+            object value = reader[fieldName];
+            int threshold = 1000;
+            int isValid = 0;
+            if (value.GetType() == typeof (double))
+            {
+                threshold = 1000;
+                isValid = 1;
+            }
+            else if (value.GetType() == typeof (int))
+            {
+                threshold = 80;
+                isValid = Convert.ToInt32(value) < 80 ? 0 : 1;
+            }
+
+            return new PmaRawFieldData(fieldName, value.ToString(), threshold.ToString(), isValid);
+        }
+
         private double GetDouble(SqlDataReader reader, string columnName)
         {
             return (reader[columnName] != DBNull.Value ? reader.GetDouble(reader.GetOrdinal(columnName)) : 0.0);
