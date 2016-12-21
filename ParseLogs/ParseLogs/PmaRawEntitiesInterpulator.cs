@@ -21,7 +21,7 @@ namespace ParseLogs
 
             for (current = current.AddSeconds(1); current <= finish; current = current.AddSeconds(1))
             {
-                PmaRawEntity entity = newList.Last();
+                PmaRawEntity entity = new PmaRawEntity(newList.Last());
                 IEnumerable<PmaRawEntity> matches = rawList.Where(obj => obj.TimeStamp == current);
                 if (matches.Count() > 0)
                 {
