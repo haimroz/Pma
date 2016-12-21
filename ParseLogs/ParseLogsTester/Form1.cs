@@ -20,7 +20,7 @@ namespace ParseLogsTester
 
         private void btnParse_Click(object sender, EventArgs e)
         {
-            PmaLogProcessor logProcessor = new PmaLogProcessor();
+            PmaLogProcessor logProcessor = new PmaLogProcessor("http://localhost:57904/api/pma");
             logProcessor.ProcessLogs(txtProtectedLogFile.Text, txtRecoveryLogFile.Text);
         }
 

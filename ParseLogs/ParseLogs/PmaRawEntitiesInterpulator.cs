@@ -23,6 +23,7 @@ namespace ParseLogs
             {
                 PmaRawEntity entity = new PmaRawEntity(newList.Last());
                 IEnumerable<PmaRawEntity> matches = rawList.Where(obj => obj.TimeStamp == current);
+                entity.TimeStamp = current;
                 if (matches.Count() > 0)
                 {
                     PmaRawEntity match = matches.First();
@@ -79,7 +80,8 @@ namespace ParseLogs
                 isEarliestProtected = false;
             }
             int earliestListEqualIndex = 0;
-            while (earliestList[earliestListEqualIndex].TimeStamp < laterList[0].TimeStamp)
+            while (earliestListEqualIndex < earliestList.Count &&
+                earliestList[earliestListEqualIndex].TimeStamp < laterList[0].TimeStamp)
             {
                 //mergedList.Add(earliestList[earliestListEqualIndex++]);
                 earliestListEqualIndex++;

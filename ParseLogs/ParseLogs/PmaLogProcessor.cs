@@ -8,6 +8,12 @@ namespace ParseLogs
 {
     public class PmaLogProcessor
     {
+        private string m_serverUri;
+        private const int ChunckSize = 5000;
+        public PmaLogProcessor(string serverUri)
+        {
+            m_serverUri = serverUri;
+        }
         public void ProcessLogs(string protectedLogFileName, string recoveryLogFileName)
         {
             PmaLogParser logParser = new PmaLogParser();
@@ -20,12 +26,22 @@ namespace ParseLogs
             List<PmaRawEntity> mergedPmaRawEntities = interpolator.MergeLists(protectedPmaRawEntities,
                 recoveryPmaRawEntities);
 
-            SendDataToServer(mergedPmaRawEntities);
+            SendDataToServerInChuncks(mergedPmaRawEntities);
+        }
+
+        private void SendDataToServerInChuncks(List<PmaRawEntity> pmaEntities)
+        {
+            int startInd = 0;
+            while (startInd < pmaEntities.Count)
+            {
+                SendDataToServer(pmaEntities.GetRange(startInd, ChunckSize));
+                startInd += ChunckSize;
+            }
         }
 
         private void SendDataToServer(List<PmaRawEntity> pmaEntities)
         {
-            var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://localhost:57904/api/pma");
+            var httpWebRequest = (HttpWebRequest)WebRequest.Create(m_serverUri);
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.Method = "POST";
 
