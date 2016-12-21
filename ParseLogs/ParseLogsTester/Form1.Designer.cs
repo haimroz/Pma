@@ -33,6 +33,7 @@
             this.txtProtectedLogFile = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.txtRecoveryLogFile = new System.Windows.Forms.TextBox();
+            this.btnTestMergeEntities = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnParse
@@ -77,11 +78,22 @@
             this.txtRecoveryLogFile.Size = new System.Drawing.Size(671, 20);
             this.txtRecoveryLogFile.TabIndex = 4;
             // 
+            // btnTestMergeEntities
+            // 
+            this.btnTestMergeEntities.Location = new System.Drawing.Point(396, 279);
+            this.btnTestMergeEntities.Name = "btnTestMergeEntities";
+            this.btnTestMergeEntities.Size = new System.Drawing.Size(75, 23);
+            this.btnTestMergeEntities.TabIndex = 5;
+            this.btnTestMergeEntities.Text = "button1";
+            this.btnTestMergeEntities.UseVisualStyleBackColor = true;
+            this.btnTestMergeEntities.Click += new System.EventHandler(this.btnTestMergeEntities_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(894, 261);
+            this.ClientSize = new System.Drawing.Size(984, 370);
+            this.Controls.Add(this.btnTestMergeEntities);
             this.Controls.Add(this.txtRecoveryLogFile);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.txtProtectedLogFile);
@@ -101,6 +113,7 @@
         private System.Windows.Forms.TextBox txtProtectedLogFile;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox txtRecoveryLogFile;
+        private System.Windows.Forms.Button btnTestMergeEntities;
     }
 }
 

@@ -23,7 +23,7 @@ namespace ParseLogs
         private const string HardeningRateMBsHeader = "Harden rate (MBps) (zvm)";
         private const string JournalSizeMBHeader = "";
         private const string ApplyRateMBsHeader = "Apply rate (MBps) (zvm)";
-        private const double MaxTcpBufferUsageMBs = 6;
+        private const double MaxTcpBufferUsageMBs = 8;
 
         public List<PmaRawEntity> Parse(string logFileName)
         {
