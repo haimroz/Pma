@@ -9,21 +9,21 @@ namespace Ppa.Controllers
 {
     public class PmaController : ApiController
     {
-        private readonly PmaRepository m_pmaRepository;
+        private readonly PmaQueryRepository _mPmaQueryRepository;
 
         public PmaController()
         {
-            m_pmaRepository = new PmaRepository();
+            _mPmaQueryRepository = new PmaQueryRepository();
         }
 
         public PmaRawEntity[] Get()
         {
-            return m_pmaRepository.GetAll();
+            return _mPmaQueryRepository.GetAll();
         }
 
         public HttpResponseMessage Post(List<PmaRawEntity> pmaList)
         {
-            m_pmaRepository.SetData(pmaList);
+            _mPmaQueryRepository.SetData(pmaList);
 
             var response = Request.CreateResponse(System.Net.HttpStatusCode.Created, pmaList);
 

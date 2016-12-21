@@ -7,7 +7,7 @@ using PmaEntities;
 
 namespace Ppa.Services
 {
-    public class PmaRepository
+    public class PmaQueryRepository
     {
 
         private const string ConnectionString =@"Server=zdb\SQLSERVER2012;Database=pma;User Id=pma;Password=zertodata;";
