@@ -1,0 +1,30 @@
+<div id="chart"></div>
+
+<div id="icons__container">
+    <div class="icon__storage"></div>
+    <div class="icon__storage-compression"></div>
+    <div class="icon__cpu"></div>
+    <div class="icon__vra"></div>
+    <div class="icon__tcp"></div>
+    <div class="icon__network"></div>
+    <div class="icon__tcp"></div>
+    <div class="icon__cpu"></div>
+    <div class="icon__vra"></div>
+    <div class="icon__pipe"></div>
+    <div class="icon__pipe"></div>
+    <div class="icon__storage"></div>
+</div>
+
+<div id="slider">
+    <input ng-model="value" type="text" id="mySlider1" slider options="options" ng-disabled="!data.length"/>
+</div>
+
+<br>
+<br>
+<br>
+
+<div ng-class="{'buttons-pause': isPlayed, 'buttons-play' : !isPlayed}" ng-click="toggleButton()"></div>
+
+<div class="result-invalid" ng-show="invalidTimeSlot" ng-click="goToKB()">
+    Go to Knowledge Base ...
+</div>
