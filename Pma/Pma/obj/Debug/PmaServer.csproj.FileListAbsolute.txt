@@ -178,3 +178,5 @@ C:\Haka\Pma\Pma\bin\System.Web.Http.Owin.xml
 C:\Haka\Pma\Pma\obj\Debug\PmaServer.csprojResolveAssemblyReference.cache
 C:\Haka\Pma\Pma\obj\Debug\Ppa.dll
 C:\Haka\Pma\Pma\obj\Debug\Ppa.pdb
+C:\Haka\Pma\Pma\bin\PmaEntities.dll
+C:\Haka\Pma\Pma\bin\PmaEntities.pdb

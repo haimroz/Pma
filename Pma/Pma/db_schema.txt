@@ -1,0 +1,30 @@
+﻿USE [Pma]
+GO
+
+/****** Object:  Table [dbo].[PmaRawData]    Script Date: 21/12/2016 17:01:51 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[PmaRawData](
+	[TimeStamp] [datetime] NULL,
+	[ProtectedVolumeWriteRateMbs] [float] NULL,
+	[ProtectedVolumeCompressedWriteRateMBs] [float] NULL,
+	[ProtectedCpuPerc] [int] NULL,
+	[ProtectedVraBufferUsagePerc] [int] NULL,
+	[ProtectedTcpBufferUsagePerc] [int] NULL,
+	[NetworkOutgoingRateMBs] [float] NULL,
+	[RecoveryTcpBufferInPercent] [int] NULL,
+	[RecoveryTcpBufferUsagePerc] [int] NULL,
+	[RecoveryCpuPerc] [int] NULL,
+	[RecoveryVraBufferUsagePerc] [int] NULL,
+	[HardeningRateMBs] [float] NULL,
+	[JournalSizeMB] [float] NULL,
+	[ApplyRateMBs] [float] NULL
+) ON [PRIMARY]
+
+GO
+
+

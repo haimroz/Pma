@@ -1,5 +1,8 @@
-﻿using System.Web.Http;
+﻿using System.Collections.Generic;
+using System.Net.Http;
+using System.Web.Http;
 using PmaEntities;
+using Ppa.Models;
 using Ppa.Services;
 
 namespace Ppa.Controllers
@@ -16,6 +19,15 @@ namespace Ppa.Controllers
         public PmaRawEntity[] Get()
         {
             return m_pmaRepository.GetAll();
+        }
+
+        public HttpResponseMessage Post(List<PmaRawEntity> pmaList)
+        {
+            m_pmaRepository.SetData(pmaList);
+
+            var response = Request.CreateResponse(System.Net.HttpStatusCode.Created, pmaList);
+
+            return response;
         }
     }
 }
