@@ -23,5 +23,11 @@ namespace ParseLogsTester
             PmaLogProcessor logProcessor = new PmaLogProcessor();
             logProcessor.ProcessLogs(txtProtectedLogFile.Text, txtRecoveryLogFile.Text);
         }
+
+        private void btnTestMergeEntities_Click(object sender, EventArgs e)
+        {
+            PmaRawEntitiesInterpolaorTest.MergeLists_ProtectedListEarlier_ProtectedListElementsFirst();
+            PmaRawEntitiesInterpolaorTest.MergeLists_ProtectedListEarlier_ProtectedListElementsFirst();
+        }
     }
 }
