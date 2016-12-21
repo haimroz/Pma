@@ -232,7 +232,7 @@ namespace Ppa.Services
                 {
                     value = 0;
                 }
-                threshold = 80;
+                threshold = 70;
                 isValid = Convert.ToInt32(value) < threshold ? 0 : 1;
             }
 
