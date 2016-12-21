@@ -40,8 +40,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PmaRawFieldData.cs" />
+    <Compile Include="PmaRawEntityWithLimit.cs" />
     <Compile Include="PmaRawEntity.cs" />
     <Compile Include="PmaThresholds.cs" />
+    <Compile Include="PmaTimstampData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

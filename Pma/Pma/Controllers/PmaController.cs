@@ -18,10 +18,20 @@ namespace Ppa.Controllers
         }
 
         // GET api/Pma/GetPmaData?returnUrl=%2F&generateState=true
-        public PmaRawEntity[] Get()
+//        public PmaRawEntity[] GetOldOld()
+//        {
+//            return m_pmaRepository.GetFilteredData(DateTime.MinValue, DateTime.MaxValue);
+//            //return m_pmaRepository.GetAll();
+//        }
+
+//        public PmaRawEntityWithLimit[] GetOld()
+//        {
+//            return m_pmaRepository.GetFilteredData1(DateTime.MinValue, DateTime.MaxValue);
+//        }
+
+        public PmaTimstampData[] Get()
         {
-            return m_pmaRepository.GetFilteredData(DateTime.MinValue, DateTime.MaxValue);
-            //return m_pmaRepository.GetAll();
+            return m_pmaRepository.GetFilteredData2(DateTime.MinValue, DateTime.MaxValue);
         }
 
         public HttpResponseMessage Post(List<PmaRawEntity> pmaList)

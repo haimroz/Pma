@@ -6,7 +6,12 @@ namespace PmaEntities
     {
         public DateTime TimeStamp { get; set; }
         public double ProtectedVolumeWriteRateMbs { get; set; }
+
+        public bool ProtectedVolumeWriteRateMbsThresRaised { get; set; }
+
         public double ProtectedVolumeCompressedWriteRateMBs { get; set; }
+
+        public double ProtectedVolumeCompressedWriteRateMBsThresRaised { get; set; }
         public int ProtectedCpuPerc { get; set; }
         public int ProtectedVraBufferUsagePerc { get; set; }
         public int ProtectedTcpBufferUsagePerc { get; set; }
