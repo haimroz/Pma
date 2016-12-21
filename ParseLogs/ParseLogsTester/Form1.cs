@@ -21,7 +21,7 @@ namespace ParseLogsTester
         private void btnParse_Click(object sender, EventArgs e)
         {
             LogParser logParser = new LogParser();
-            logParser.Parse(txtLogFile.Text);
+            logParser.Parse(txtLogFile.Text, "");
         }
     }
 }

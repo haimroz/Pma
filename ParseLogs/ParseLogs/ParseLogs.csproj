@@ -51,8 +51,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PmaEntities\PmaEntities.csproj">
-      <Project>{1098590e-a0dd-4a05-89de-e2835f5141a8}</Project>
+    <ProjectReference Include="..\..\PmaEntities\PmaEntities.csproj">
+      <Project>{1098590E-A0DD-4A05-89DE-E2835F5141A8}</Project>
       <Name>PmaEntities</Name>
     </ProjectReference>
   </ItemGroup>

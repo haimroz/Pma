@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParseLogs", "ParseLogs\Pars
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParseLogsTester", "ParseLogsTester\ParseLogsTester.csproj", "{E604D769-7FE0-404C-BBCC-FFBFE9CAC651}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PmaEntities", "PmaEntities\PmaEntities.csproj", "{1098590E-A0DD-4A05-89DE-E2835F5141A8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PmaEntities", "..\PmaEntities\PmaEntities.csproj", "{1098590E-A0DD-4A05-89DE-E2835F5141A8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
