@@ -23,6 +23,7 @@ namespace ParseLogs
         private const string HardeningRateMBsHeader = "Harden rate (MBps) (zvm)";
         private const string JournalSizeMBHeader = "";
         private const string ApplyRateMBsHeader = "Apply rate (MBps) (zvm)";
+        private const double MaxTcpBufferUsageMBs = 6;
 
         public List<PmaRawEntity> Parse(string logFileName)
         {
@@ -49,63 +50,39 @@ namespace ParseLogs
 
         private List<PmaRawEntity> BuildPmaEntities(JObject logJObject, Dictionary<string, int> headers)
         {
-            return GenerateDummyPmaData(100);
+            List<PmaRawEntity> pmaRawEntities = new List<PmaRawEntity>();
+            for (int dataIndex = 0; dataIndex < logJObject["data"].Count(); dataIndex++)
+            {
+                List<string> pmaLogData = (List<string>)logJObject["data"][dataIndex].ToObject(typeof(List<string>));
+                pmaRawEntities.Add(BuildPmaEntity(pmaLogData.ToArray(), headers));
+            }
 
-            //List<PmaRawEntity> pmaRawEntities = new List<PmaRawEntity>();
-            //for (int dataIndex = 0; dataIndex < logJObject["data"].Count(); dataIndex++)
-            //{
-            //    List<string> pmaLogData = (List<string>)logJObject["data"][dataIndex].ToObject(typeof(List<string>));
-
-            //}
-
-            //return pmaRawEntities;
+            return pmaRawEntities;
         }
 
         private PmaRawEntity BuildPmaEntity(string[] pmaLogData, Dictionary<string, int> headers)
         {
-            PmaRawEntity pmaRawEntity = new PmaRawEntity();
-            pmaRawEntity.TimeStamp = Convert.ToDateTime(pmaLogData[headers[TimeStampHeader]]);
-         //   pmaRawEntity.
-            return pmaRawEntity;
-        }
-
-
-
-
-        private List<PmaRawEntity> GenerateDummyPmaData(int numberOfRows)
-        {
-            DateTime currentDateTime = DateTime.Now.AddDays(-2);
-            List<PmaRawEntity> pmaRawEntity = new List<PmaRawEntity>();
-            for (int i = 0; i < numberOfRows; i++)
-            {
-                currentDateTime = currentDateTime.AddSeconds(1);
-                pmaRawEntity.Add(CreatePmaRow(currentDateTime, i));
-            }
-            return pmaRawEntity;
-        }
-
-        private PmaRawEntity CreatePmaRow(DateTime dateTime, int index)
-        {
-            Random random = new Random(index);
-
             PmaRawEntity pmaRawEntity = new PmaRawEntity
             {
-                TimeStamp = dateTime,
-                ProtectedVolumeWriteRateMbs = Math.Abs(random.NextDouble()),
-                ProtectedVolumeCompressedWriteRateMBs = Math.Abs(random.NextDouble()),
-                ProtectedCpuPerc = random.Next(0, 100),
-                ProtectedVraBufferUsagePerc = random.Next(0, 100),
-                ProtectedTcpBufferUsagePerc = random.Next(0, 100),
-                NetworkOutgoingRateMBs = Math.Abs(random.NextDouble()),
-                RecoveryTcpBufferUsagePerc = random.Next(0, 100),
-                RecoveryCpuPerc = random.Next(0, 100),
-                RecoveryVraBufferUsagePerc = random.Next(0, 100),
-                HardeningRateMBs = Math.Abs(random.NextDouble()),
-                JournalSizeMB = Math.Abs(random.NextDouble()),
-                ApplyRateMBs = Math.Abs(random.NextDouble())
+                TimeStamp = Convert.ToDateTime(pmaLogData[headers[TimeStampHeader]]),
+                ProtectedVolumeWriteRateMbs = Convert.ToDouble(pmaLogData[headers[ProtectedVolumeWriteRateMBsHeader]]),
+                ProtectedVolumeCompressedWriteRateMBs = Convert.ToDouble(pmaLogData[headers[ProtectedVolumeCompressedWriteRateMBsHeader]]),
+                ProtectedCpuPerc = Convert.ToInt32(Convert.ToDouble(pmaLogData[headers[VraCpuPercHeader]])),
+                ProtectedVraBufferUsagePerc = Convert.ToInt32(Convert.ToDouble(pmaLogData[headers[ProtectedVraBufferUsagePercHeader]])),
+                ProtectedTcpBufferUsagePerc = ConvertTcpBufferUsageMBsToPerc(Convert.ToDouble(pmaLogData[headers[ProtectedTcpBufferUsageMBsHeader]])),
+                NetworkOutgoingRateMBs = Convert.ToDouble(pmaLogData[headers[NetworkOutgoingRateMBsHeader]]),
+                RecoveryTcpBufferUsagePerc = ConvertTcpBufferUsageMBsToPerc(Convert.ToDouble(pmaLogData[headers[RecoveryTcpBufferUsageMBsHeader]])),
+                RecoveryCpuPerc = Convert.ToInt32(Convert.ToDouble(pmaLogData[headers[VraCpuPercHeader]])),
+                RecoveryVraBufferUsagePerc = Convert.ToInt32(Convert.ToDouble(pmaLogData[headers[RecoveryVraBufferUsagePercHeader]])),
+                HardeningRateMBs = Convert.ToDouble(pmaLogData[headers[HardeningRateMBsHeader]]),
+                ApplyRateMBs = Convert.ToDouble(pmaLogData[headers[ApplyRateMBsHeader]])
             };
-
             return pmaRawEntity;
+        }
+
+        private int ConvertTcpBufferUsageMBsToPerc(double tcpBufferUsageMBs)
+        {
+            return Convert.ToInt32(tcpBufferUsageMBs/MaxTcpBufferUsageMBs);
         }
     }
 }
