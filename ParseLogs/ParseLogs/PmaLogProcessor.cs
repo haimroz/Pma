@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using Newtonsoft.Json;
@@ -34,7 +35,7 @@ namespace ParseLogs
             int startInd = 0;
             while (startInd < pmaEntities.Count)
             {
-                SendDataToServer(pmaEntities.GetRange(startInd, ChunckSize));
+                SendDataToServer(pmaEntities.GetRange(startInd, Math.Min(pmaEntities.Count - startInd, ChunckSize)));
                 startInd += ChunckSize;
             }
         }
