@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Web.Http;
 using PmaEntities;
@@ -16,9 +17,11 @@ namespace Ppa.Controllers
             m_pmaRepository = new PmaRepository();
         }
 
+        // GET api/Pma/GetPmaData?returnUrl=%2F&generateState=true
         public PmaRawEntity[] Get()
         {
-            return m_pmaRepository.GetAll();
+            return m_pmaRepository.GetFilteredData(DateTime.MinValue, DateTime.MaxValue);
+            //return m_pmaRepository.GetAll();
         }
 
         public HttpResponseMessage Post(List<PmaRawEntity> pmaList)

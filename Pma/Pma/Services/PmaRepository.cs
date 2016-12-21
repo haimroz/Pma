@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
+using System.Data.SqlTypes;
 using PmaEntities;
 
 namespace Ppa.Services
@@ -10,15 +11,98 @@ namespace Ppa.Services
     public class PmaRepository
     {
 
-        private const string ConnectionString =@"Server=zdb\SQLSERVER2012;Database=pma;User Id=pma;Password=zertodata;";
+        private const string ConnectionString =@"Server=zdb\SQLSERVER2012;Database=Pma;User Id=pma;Password=zertodata;";
 
         public PmaRawEntity[] GetAll()
         {
             return GenerateDummyPmaData(1000);
         }
+        //        public PmaRawEntity[] Del(DateTime from, DateTime to)
+        //        {
+        //
+        //            SqlConnection sqlConnection1 = new SqlConnection(ConnectionString);
+        //            SqlCommand cmd = new SqlCommand();
+        //            SqlDataReader reader;
+        //
+        //            cmd.CommandText = "SELECT * FROM PmaRawData";
+        //            cmd.CommandType = CommandType.Text;
+        //            cmd.Connection = sqlConnection1;
+        //
+        //            sqlConnection1.Open();
+        //
+        //            reader = cmd.ExecuteReader();
+        //            // Data is accessible through the DataReader object here.
+        //
+        //            sqlConnection1.Close();
+        //
+        //            return GenerateDummyPmaData(1000);
+        //        }
+        private readonly DateTime m_minimumSqlUtcDateTime = new DateTime(SqlDateTime.MinValue.Value.Ticks, DateTimeKind.Utc);
+        private readonly DateTime m_maximumSqlUtcDateTime = new DateTime(SqlDateTime.MaxValue.Value.Ticks, DateTimeKind.Utc);
+
+        private DateTime ConvertMinMaxSqlDateTimeToDateTime(DateTime dbDateTime)
+        {
+            DateTime result = dbDateTime;
+            if (dbDateTime<m_minimumSqlUtcDateTime)
+            {
+                result = m_minimumSqlUtcDateTime;
+            }
+            if (dbDateTime>m_maximumSqlUtcDateTime)
+            {
+                result = m_maximumSqlUtcDateTime;
+            }
+            return result;
+        }
         public PmaRawEntity[] GetFilteredData(DateTime from, DateTime to)
         {
-            return GenerateDummyPmaData(1000);
+            List<PmaRawEntity> pmaRawEntities = new List<PmaRawEntity>();
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            {
+                string queryString = "SELECT distinct * FROM PmaRawData WHERE TimeStamp Between @from and @to ";
+                //string queryString = "SELECT * FROM PmaRawData";
+                SqlCommand command = new SqlCommand(queryString, connection);
+                command.Parameters.AddWithValue("@from", ConvertMinMaxSqlDateTimeToDateTime(from));
+                command.Parameters.AddWithValue("@to", ConvertMinMaxSqlDateTimeToDateTime(to));
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+                try
+                {
+                    while (reader.Read())
+                    {
+                        var pmaRawEntity = new PmaRawEntity();
+                        pmaRawEntity.TimeStamp = (DateTime)reader["TimeStamp"];
+                        pmaRawEntity.ApplyRateMBs = GetDouble(reader, "ApplyRateMBs");
+                        pmaRawEntity.HardeningRateMBs = GetDouble(reader, "HardeningRateMBs");
+                        pmaRawEntity.JournalSizeMB = GetDouble(reader, "JournalSizeMB");
+                        pmaRawEntity.NetworkOutgoingRateMBs = GetDouble(reader, "NetworkOutgoingRateMBs");
+                        pmaRawEntity.ProtectedCpuPerc= GetInt(reader, "ProtectedCpuPerc");
+                        pmaRawEntity.ProtectedTcpBufferUsagePerc= GetInt(reader, "ProtectedTcpBufferUsagePerc");
+                        pmaRawEntity.ProtectedVolumeCompressedWriteRateMBs= GetDouble(reader, "ProtectedVolumeCompressedWriteRateMBs");
+                        pmaRawEntity.ProtectedVolumeWriteRateMbs = GetDouble(reader, "ProtectedVolumeWriteRateMbs");
+                        pmaRawEntity.ProtectedVraBufferUsagePerc= GetInt(reader, "ProtectedVraBufferUsagePerc");
+                        pmaRawEntity.RecoveryCpuPerc= GetInt(reader, "RecoveryCpuPerc");
+                        pmaRawEntity.RecoveryVraBufferUsagePerc = GetInt(reader, "RecoveryVraBufferUsagePerc");
+                        pmaRawEntity.RecoveryTcpBufferUsagePerc = GetInt(reader, "RecoveryTcpBufferUsagePerc");
+                        pmaRawEntities.Add(pmaRawEntity);
+                    }
+                    return pmaRawEntities.ToArray();
+                }
+                finally
+                {
+                    // Always call Close when done reading.
+                    reader.Close();
+                }
+            }
+        }
+
+        private double GetDouble(SqlDataReader reader, string columnName)
+        {
+            return (reader[columnName] != DBNull.Value ? reader.GetDouble(reader.GetOrdinal(columnName)) : 0.0);
+        }
+
+        private int GetInt(SqlDataReader reader, string columnName)
+        {
+            return (reader[columnName] != DBNull.Value ? reader.GetInt32(reader.GetOrdinal(columnName)) : 0);
         }
 
         public void SetData(List<PmaRawEntity> pmaList)
