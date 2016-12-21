@@ -80,9 +80,13 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ParseLogs\ParseLogs.csproj">
+    <ProjectReference Include="..\..\PmaEntities\PmaEntities.csproj">
+      <Project>{1098590e-a0dd-4a05-89de-e2835f5141a8}</Project>
+      <Name>PmaEntities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ParseLogs\PmaLogProcessor.csproj">
       <Project>{89861fc1-efdf-4b5a-a5e9-6407b29b0eef}</Project>
-      <Name>ParseLogs</Name>
+      <Name>PmaLogProcessor</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
