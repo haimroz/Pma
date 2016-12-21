@@ -13,11 +13,11 @@ namespace ParseLogs
             PmaLogParser logParser = new PmaLogParser();
             List<PmaRawEntity> protectedRawList = logParser.Parse(protectedLogFileName);
             List<PmaRawEntity> recoveryRawList = logParser.Parse(recoveryLogFileName);
-            PmaRawEntitiesInterpulator interpulator = new PmaRawEntitiesInterpulator();
-            List<PmaRawEntity> protectedPmaRawEntities = interpulator.ProcessRawList(protectedRawList);
-            List<PmaRawEntity> recoveryPmaRawEntities = interpulator.ProcessRawList(recoveryRawList);
+            PmaRawEntitiesInterpulator interpolator = new PmaRawEntitiesInterpulator();
+            List<PmaRawEntity> protectedPmaRawEntities = interpolator.ProcessRawList(protectedRawList);
+            List<PmaRawEntity> recoveryPmaRawEntities = interpolator.ProcessRawList(recoveryRawList);
 
-            List<PmaRawEntity> mergedPmaRawEntities = interpulator.MergeLists(protectedPmaRawEntities,
+            List<PmaRawEntity> mergedPmaRawEntities = interpolator.MergeLists(protectedPmaRawEntities,
                 recoveryPmaRawEntities);
 
             SendDataToServer(mergedPmaRawEntities);
