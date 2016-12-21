@@ -31,7 +31,18 @@ namespace Ppa.Controllers
 
         public PmaTimstampData[] Get()
         {
-            return m_pmaRepository.GetFilteredData2(DateTime.MinValue, DateTime.MaxValue);
+            PmaTimstampData[] pmaData = m_pmaRepository.GetFilteredData2(DateTime.MinValue, DateTime.MaxValue);
+            SetRangeOfInvalidDueToNetworkingIssue(pmaData);
+            return pmaData;
+        }
+
+        private static void SetRangeOfInvalidDueToNetworkingIssue(PmaTimstampData[] pmaData)
+        {
+            int startOfInvalid = pmaData.Length/3;
+            for (int i = startOfInvalid; i < pmaData.Length/10; i++)
+            {
+                pmaData[i].IsValid = 0;
+            }
         }
 
         public HttpResponseMessage Post(List<PmaRawEntity> pmaList)
