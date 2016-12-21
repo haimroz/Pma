@@ -264,7 +264,7 @@ namespace Ppa.Services
                     {
                         bulkCopy.WriteToServer(ConvertListToDataTable(pmaList));
                     }
-                    catch (Exception)
+                    catch (Exception exception)
                     {
                         transaction.Rollback();
                         connection.Close();

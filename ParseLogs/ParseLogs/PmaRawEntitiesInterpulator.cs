@@ -17,12 +17,41 @@ namespace ParseLogs
 
             DateTime current = start;
 
-            newList.Add(rawList.First());
+            PmaRawEntity newItem = new PmaRawEntity(rawList.First());
+
+
+            if (newItem.ProtectedVolumeWriteRateMbs == -1)
+                newItem.ProtectedVolumeWriteRateMbs = 0;
+            if (newItem.ProtectedVolumeCompressedWriteRateMBs == -1)
+                newItem.ProtectedVolumeCompressedWriteRateMBs = 0;
+            if (newItem.ProtectedCpuPerc == -1)
+                newItem.ProtectedCpuPerc = 0;
+            if (newItem.ProtectedVraBufferUsagePerc == -1)
+                newItem.ProtectedVraBufferUsagePerc = 0;
+            if (newItem.ProtectedTcpBufferUsagePerc == -1)
+                newItem.ProtectedTcpBufferUsagePerc = 0;
+            if (newItem.NetworkOutgoingRateMBs == -1)
+                newItem.NetworkOutgoingRateMBs = 0;
+            if (newItem.RecoveryTcpBufferUsagePerc == -1)
+                newItem.RecoveryTcpBufferUsagePerc = 0;
+            if (newItem.RecoveryCpuPerc == -1)
+                newItem.RecoveryCpuPerc = 0;
+            if (newItem.RecoveryVraBufferUsagePerc == -1)
+                newItem.RecoveryVraBufferUsagePerc = 0;
+            if (newItem.HardeningRateMBs == -1)
+                newItem.HardeningRateMBs = 0;
+            if (newItem.JournalSizeMB == -1)
+                newItem.JournalSizeMB = 0;
+            if (newItem.ApplyRateMBs == -1)
+                newItem.ApplyRateMBs = 0;
+
+            newList.Add(newItem);
 
             for (current = current.AddSeconds(1); current <= finish; current = current.AddSeconds(1))
             {
                 PmaRawEntity entity = new PmaRawEntity(newList.Last());
                 IEnumerable<PmaRawEntity> matches = rawList.Where(obj => obj.TimeStamp == current);
+                entity.TimeStamp = current;
                 if (matches.Count() > 0)
                 {
                     PmaRawEntity match = matches.First();
@@ -79,7 +108,8 @@ namespace ParseLogs
                 isEarliestProtected = false;
             }
             int earliestListEqualIndex = 0;
-            while (earliestList[earliestListEqualIndex].TimeStamp < laterList[0].TimeStamp)
+            while (earliestListEqualIndex < earliestList.Count &&
+                earliestList[earliestListEqualIndex].TimeStamp < laterList[0].TimeStamp)
             {
                 //mergedList.Add(earliestList[earliestListEqualIndex++]);
                 earliestListEqualIndex++;
@@ -94,7 +124,7 @@ namespace ParseLogs
                 }
                 else
                 {
-                    mergedList.Add(MergePmaRawEntities(laterList[earliestListEqualIndex++], earliestList[latestListEqualIndex++]));
+                    mergedList.Add(MergePmaRawEntities(laterList[latestListEqualIndex++], earliestList[earliestListEqualIndex++]));
                 }
             }
             //List<PmaRawEntity> latestList = null;
