@@ -83,7 +83,10 @@ namespace ParseLogs
 
         private int ConvertTcpBufferUsageMBsToPerc(double tcpBufferUsageMBs)
         {
-            return Convert.ToInt32(tcpBufferUsageMBs/MaxTcpBufferUsageMBs);
+            if (tcpBufferUsageMBs > 0)
+            return Convert.ToInt32(tcpBufferUsageMBs*100.0/MaxTcpBufferUsageMBs);
+            else
+                return Convert.ToInt32(tcpBufferUsageMBs);
         }
     }
 }
