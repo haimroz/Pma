@@ -24,7 +24,12 @@
 <br>
 
 <div ng-class="{'buttons-pause': isPlayed, 'buttons-play' : !isPlayed}" ng-click="toggleButton()"></div>
-
+<!--
 <div class="result-invalid" ng-show="invalidTimeSlot" ng-click="goToKB()">
+    Go to Knowledge Base ...
+</div>
+-->
+
+<div class="result-invalid" ng-show="showGotoKB()" ng-click="goToKB()">
     Go to Knowledge Base ...
 </div>
