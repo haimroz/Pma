@@ -18,16 +18,16 @@ namespace Ppa.Controllers
         }
 
         // GET api/Pma/GetPmaData?returnUrl=%2F&generateState=true
-//        public PmaRawEntity[] GetOldOld()
-//        {
-//            return m_pmaRepository.GetFilteredData(DateTime.MinValue, DateTime.MaxValue);
-//            //return m_pmaRepository.GetAll();
-//        }
+        //        public PmaRawEntity[] GetOldOld()
+        //        {
+        //            return m_pmaRepository.GetFilteredData(DateTime.MinValue, DateTime.MaxValue);
+        //            //return m_pmaRepository.GetAll();
+        //        }
 
-//        public PmaRawEntityWithLimit[] GetOld()
-//        {
-//            return m_pmaRepository.GetFilteredData1(DateTime.MinValue, DateTime.MaxValue);
-//        }
+        //        public PmaRawEntityWithLimit[] GetOld()
+        //        {
+        //            return m_pmaRepository.GetFilteredData1(DateTime.MinValue, DateTime.MaxValue);
+        //        }
 
         public PmaTimstampData[] Get()
         {
@@ -48,7 +48,7 @@ namespace Ppa.Controllers
         private static void SetRangeOfInvalidDueToNetworkingIssue(PmaTimstampData[] pmaData)
         {
             int startOfInvalid = pmaData.Length/3;
-            for (int i = startOfInvalid; i < pmaData.Length/10; i++)
+            for (int i = startOfInvalid; i < startOfInvalid + pmaData.Length/10; i++)
             {
                 pmaData[i].IsValid = 0;
             }
