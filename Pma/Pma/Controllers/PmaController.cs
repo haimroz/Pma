@@ -36,6 +36,15 @@ namespace Ppa.Controllers
             return pmaData;
         }
 
+//        public PmaTimstampData[] Get([FromUri] string from, [FromUri] string to)
+//        {
+//            var fromDateTime = DateTime.Parse(@from);
+//            var toDateTime = DateTime.Parse(to);
+//            PmaTimstampData[] pmaData = m_pmaRepository.GetFilteredData2(fromDateTime, toDateTime);
+//            SetRangeOfInvalidDueToNetworkingIssue(pmaData);
+//            return pmaData;
+//        }
+
         private static void SetRangeOfInvalidDueToNetworkingIssue(PmaTimstampData[] pmaData)
         {
             int startOfInvalid = pmaData.Length/3;
