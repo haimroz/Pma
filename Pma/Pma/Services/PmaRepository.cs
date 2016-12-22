@@ -233,7 +233,7 @@ namespace Ppa.Services
                     value = 0;
                 }
                 threshold = 70;
-                isValid = Convert.ToInt32(value) < threshold ? 0 : 1;
+                isValid = Convert.ToInt32(value) < threshold ? 1 : 0;
             }
 
             return new PmaRawFieldData(fieldName, value.ToString(), threshold.ToString(), isValid);

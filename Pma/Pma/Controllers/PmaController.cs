@@ -48,10 +48,50 @@ namespace Ppa.Controllers
         private static void SetRangeOfInvalidDueToNetworkingIssue(PmaTimstampData[] pmaData)
         {
             int startOfInvalid = pmaData.Length/3;
-            for (int i = startOfInvalid; i < startOfInvalid + pmaData.Length/10; i++)
+            for (int i = 0; i < pmaData.Length; i++)
             {
-                pmaData[i].IsValid = 0;
+                InvalidateValueIfBuffersAreAboveThreshold(pmaData, i);
+                InvalidateValueIfNetworkBuffersAreAboveThreshold(pmaData, i);
             }
+        }
+
+        private static void InvalidateValueIfBuffersAreAboveThreshold(PmaTimstampData[] pmaData, int i)
+        {
+            PmaTimstampData pmaTimstampData = pmaData[i];
+            string sProtectedVraBufferUsagePerc = pmaTimstampData.PmaRawFieldList[3].Value;
+            int protectedVraBufferUsagePerc;
+            int.TryParse(sProtectedVraBufferUsagePerc, out protectedVraBufferUsagePerc);
+
+            string sProtectedVraBufferUsagePercThreshold = pmaTimstampData.PmaRawFieldList[3].Threshold;
+            int protectedVraBufferUsagePercThreshold;
+            int.TryParse(sProtectedVraBufferUsagePercThreshold, out protectedVraBufferUsagePercThreshold);
+
+            string sRecoveryVraBufferUsagePerc = pmaTimstampData.PmaRawFieldList[8].Value;
+            int recoveryVraBufferUsagePerc;
+            int.TryParse(sRecoveryVraBufferUsagePerc, out recoveryVraBufferUsagePerc);
+
+            string sRecoveryVraBufferUsagePercThreshold = pmaTimstampData.PmaRawFieldList[8].Threshold;
+            int recoveryVraBufferUsagePercThreshold;
+            int.TryParse(sRecoveryVraBufferUsagePercThreshold, out recoveryVraBufferUsagePercThreshold);
+
+            if (protectedVraBufferUsagePerc > protectedVraBufferUsagePercThreshold ||
+                recoveryVraBufferUsagePerc > recoveryVraBufferUsagePercThreshold)
+                pmaTimstampData.IsValid = 0;
+        }
+
+        private static void InvalidateValueIfNetworkBuffersAreAboveThreshold(PmaTimstampData[] pmaData, int i)
+        {
+            PmaTimstampData pmaTimstampData = pmaData[i];
+            string sProtectedTcpBufferUsagePerc = pmaTimstampData.PmaRawFieldList[4].Value;
+            int protectedTcpBufferUsagePerc;
+            int.TryParse(sProtectedTcpBufferUsagePerc, out protectedTcpBufferUsagePerc);
+
+            string sRecoveryTcpBufferUsagePerc = pmaTimstampData.PmaRawFieldList[6].Value;
+            int recoveryTcpBufferUsagePerc;
+            int.TryParse(sRecoveryTcpBufferUsagePerc, out recoveryTcpBufferUsagePerc);
+
+            if (protectedTcpBufferUsagePerc > 80 || recoveryTcpBufferUsagePerc > 80)
+                pmaTimstampData.IsValid = 0;
         }
 
         public HttpResponseMessage Post(List<PmaRawEntity> pmaList)
