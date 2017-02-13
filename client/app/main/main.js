@@ -3,7 +3,7 @@
  */
 'use strict';
 
-var _timeout = 100; //threshold for auto-play
+var _timeout = 500; //threshold for auto-play
 
 angular.module('myApp.main', ['ngRoute'])
 
@@ -38,6 +38,15 @@ angular.module('myApp.main', ['ngRoute'])
             callback: onDragSlider
         };
         $scope.Message = 'Timer paused';
+
+        $scope.showGotoKB = function() {
+            if ($scope.data)
+            {
+                if (!$scope.data[$scope.value][13]) return true;
+            }
+            return false;
+            // return $scope.invalidTimeSlot;
+        };
 
         $scope.goToKB = function () {
             $window.open('https://sites.google.com/a/zerto.com/dev/home/zzz-deprecated-pages-1/vrastoragebottleneckkb');
@@ -84,10 +93,8 @@ angular.module('myApp.main', ['ngRoute'])
                     processedTimeSlot.push(item.Value);
                 });
 
-                if(index === 1999){
-                    $scope.invalidTimeSlot = processedTimeSlot;
-                    $scope.invalidTimeSlot_index = index;
-                }
+                processedTimeSlot.push(timeSlot.IsValid);
+
                 if (!timeSlot.IsValid && !$scope.invalidTimeSlot) {
                     $scope.invalidTimeSlot = processedTimeSlot;
                     $scope.invalidTimeSlot_index = index;
@@ -135,7 +142,7 @@ angular.module('myApp.main', ['ngRoute'])
                         },
                         tick: {
                             format: d3.format("0.%"),
-                            values: [0]
+                            values: [0, 50, 100]
                         }
                     }
                 }

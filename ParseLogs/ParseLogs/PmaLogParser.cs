@@ -13,6 +13,7 @@ namespace ParseLogs
     public class PmaLogParser
     {
         private const string TimeStampHeader = "Time";
+        private const string ProtectedIOsInDriverMBsHeader = "Protected IOs in driver (MBps)";
         private const string ProtectedVolumeWriteRateMBsHeader = "Write IOs rate (MBps) (zvm)";
         private const string ProtectedVolumeCompressedWriteRateMBsHeader = "Write IOs compressed rate (MBps) (zvm)";
         private const string VraCpuPercHeader = "Vra CPU";
@@ -22,7 +23,6 @@ namespace ParseLogs
         private const string RecoveryTcpBufferUsageMBsHeader = "OS net RX queue (MB)";
         private const string RecoveryVraBufferUsagePercHeader = "Remote buf usage (%)";
         private const string HardeningRateMBsHeader = "Harden rate (MBps) (zvm)";
-        private const string JournalSizeMBHeader = "";
         private const string ApplyRateMBsHeader = "Apply rate (MBps) (zvm)";
         private const double MaxTcpBufferUsageMBs = 8;
 
@@ -66,7 +66,8 @@ namespace ParseLogs
             PmaRawEntity pmaRawEntity = new PmaRawEntity
             {
                 TimeStamp = Convert.ToDateTime(pmaLogData[headers[TimeStampHeader]], CultureInfo.InvariantCulture),
-                ProtectedVolumeWriteRateMbs = Convert.ToDouble(pmaLogData[headers[ProtectedVolumeWriteRateMBsHeader]]),
+                ProtectedIOsInDriverMBs = Convert.ToDouble(pmaLogData[headers[ProtectedIOsInDriverMBsHeader]]),
+                ProtectedVolumeWriteRateMBs = Convert.ToDouble(pmaLogData[headers[ProtectedVolumeWriteRateMBsHeader]]),
                 ProtectedVolumeCompressedWriteRateMBs = Convert.ToDouble(pmaLogData[headers[ProtectedVolumeCompressedWriteRateMBsHeader]]),
                 ProtectedCpuPerc = Convert.ToInt32(Convert.ToDouble(pmaLogData[headers[VraCpuPercHeader]])),
                 ProtectedVraBufferUsagePerc = Convert.ToInt32(Convert.ToDouble(pmaLogData[headers[ProtectedVraBufferUsagePercHeader]])),
@@ -83,7 +84,30 @@ namespace ParseLogs
 
         private int ConvertTcpBufferUsageMBsToPerc(double tcpBufferUsageMBs)
         {
-            return Convert.ToInt32(tcpBufferUsageMBs/MaxTcpBufferUsageMBs);
+            if (tcpBufferUsageMBs > 0)
+            return Convert.ToInt32(tcpBufferUsageMBs*100.0/MaxTcpBufferUsageMBs);
+            else
+                return Convert.ToInt32(tcpBufferUsageMBs);
+        }
+
+        public List<string> GetPmaHeaders()
+        {
+            List<string> headers = new List<string>();
+            headers.Add(TimeStampHeader);
+            headers.Add(ProtectedIOsInDriverMBsHeader);
+            headers.Add(ProtectedVolumeWriteRateMBsHeader);
+            headers.Add(ProtectedVolumeCompressedWriteRateMBsHeader);
+            headers.Add("Protected " + VraCpuPercHeader);
+            headers.Add(ProtectedVraBufferUsagePercHeader);
+            headers.Add(ProtectedTcpBufferUsageMBsHeader);
+            headers.Add(NetworkOutgoingRateMBsHeader);
+            headers.Add(RecoveryTcpBufferUsageMBsHeader);
+            headers.Add("Recovery " + VraCpuPercHeader);
+            headers.Add(RecoveryVraBufferUsagePercHeader);
+            headers.Add(HardeningRateMBsHeader);
+            headers.Add(ApplyRateMBsHeader);
+
+            return headers;
         }
     }
 }

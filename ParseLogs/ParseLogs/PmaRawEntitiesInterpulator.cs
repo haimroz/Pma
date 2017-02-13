@@ -20,8 +20,10 @@ namespace ParseLogs
             PmaRawEntity newItem = new PmaRawEntity(rawList.First());
 
 
-            if (newItem.ProtectedVolumeWriteRateMbs == -1)
-                newItem.ProtectedVolumeWriteRateMbs = 0;
+            if (newItem.ProtectedIOsInDriverMBs == -1)
+                newItem.ProtectedIOsInDriverMBs = 0;
+            if (newItem.ProtectedVolumeWriteRateMBs == -1)
+                newItem.ProtectedVolumeWriteRateMBs = 0;
             if (newItem.ProtectedVolumeCompressedWriteRateMBs == -1)
                 newItem.ProtectedVolumeCompressedWriteRateMBs = 0;
             if (newItem.ProtectedCpuPerc == -1)
@@ -38,10 +40,6 @@ namespace ParseLogs
                 newItem.RecoveryCpuPerc = 0;
             if (newItem.RecoveryVraBufferUsagePerc == -1)
                 newItem.RecoveryVraBufferUsagePerc = 0;
-            if (newItem.HardeningRateMBs == -1)
-                newItem.HardeningRateMBs = 0;
-            if (newItem.JournalSizeMB == -1)
-                newItem.JournalSizeMB = 0;
             if (newItem.ApplyRateMBs == -1)
                 newItem.ApplyRateMBs = 0;
 
@@ -55,8 +53,10 @@ namespace ParseLogs
                 if (matches.Count() > 0)
                 {
                     PmaRawEntity match = matches.First();
-                    if (match.ProtectedVolumeWriteRateMbs != -1)
-                        entity.ProtectedVolumeWriteRateMbs = match.ProtectedVolumeWriteRateMbs;
+                    if (match.ProtectedIOsInDriverMBs != -1)
+                        entity.ProtectedIOsInDriverMBs = match.ProtectedIOsInDriverMBs;
+                    if (match.ProtectedVolumeWriteRateMBs != -1)
+                        entity.ProtectedVolumeWriteRateMBs = match.ProtectedVolumeWriteRateMBs;
                     if (match.ProtectedVolumeCompressedWriteRateMBs != -1)
                         entity.ProtectedVolumeCompressedWriteRateMBs = match.ProtectedVolumeCompressedWriteRateMBs;
                     if (match.ProtectedCpuPerc != -1)
@@ -75,8 +75,6 @@ namespace ParseLogs
                         entity.RecoveryVraBufferUsagePerc = match.RecoveryVraBufferUsagePerc;
                     if (match.HardeningRateMBs != -1)
                         entity.HardeningRateMBs = match.HardeningRateMBs;
-                    if (match.JournalSizeMB != -1)
-                        entity.JournalSizeMB = match.JournalSizeMB;
                     if (match.ApplyRateMBs != -1)
                         entity.ApplyRateMBs = match.ApplyRateMBs;
                 }
@@ -170,7 +168,7 @@ namespace ParseLogs
             PmaRawEntity mergedEntity = new PmaRawEntity
             {
                 TimeStamp = protectedEntity.TimeStamp,
-                ProtectedVolumeWriteRateMbs = protectedEntity.ProtectedVolumeWriteRateMbs,
+                ProtectedVolumeWriteRateMBs = protectedEntity.ProtectedVolumeWriteRateMBs,
                 ProtectedVolumeCompressedWriteRateMBs = protectedEntity.ProtectedVolumeCompressedWriteRateMBs,
                 ProtectedCpuPerc = protectedEntity.ProtectedCpuPerc,
                 ProtectedVraBufferUsagePerc = protectedEntity.ProtectedVraBufferUsagePerc,

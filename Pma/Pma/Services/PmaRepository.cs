@@ -187,18 +187,18 @@ namespace Ppa.Services
                         timstampData.PmaRawFieldList = new List<PmaRawFieldData>();
                         timstampData.TimeStamp = (DateTime)reader["TimeStamp"];
 
-                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "ApplyRateMBs"));
-                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "HardeningRateMBs"));
-                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "JournalSizeMB"));
-                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "NetworkOutgoingRateMBs"));
-                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "ProtectedCpuPerc"));
-                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "ProtectedTcpBufferUsagePerc"));
-                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "ProtectedVolumeCompressedWriteRateMBs"));
                         timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "ProtectedVolumeWriteRateMbs"));
+                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "ProtectedVolumeCompressedWriteRateMBs"));
+                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "ProtectedCpuPerc"));
                         timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "ProtectedVraBufferUsagePerc"));
+                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "ProtectedTcpBufferUsagePerc"));
+                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "NetworkOutgoingRateMBs"));
+                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "RecoveryTcpBufferUsagePerc"));
                         timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "RecoveryCpuPerc"));
                         timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "RecoveryVraBufferUsagePerc"));
-                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "RecoveryTcpBufferUsagePerc"));
+                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "HardeningRateMBs"));
+                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "JournalSizeMB"));
+                        timstampData.PmaRawFieldList.Add(ConstructFieldData(reader, "ApplyRateMBs"));
 
                         pmaRawEntities.Add(timstampData);
                     }
@@ -232,8 +232,8 @@ namespace Ppa.Services
                 {
                     value = 0;
                 }
-                threshold = 80;
-                isValid = Convert.ToInt32(value) < 80 ? 0 : 1;
+                threshold = 70;
+                isValid = Convert.ToInt32(value) < threshold ? 1 : 0;
             }
 
             return new PmaRawFieldData(fieldName, value.ToString(), threshold.ToString(), isValid);
