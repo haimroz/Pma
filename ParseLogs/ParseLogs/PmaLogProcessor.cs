@@ -1,31 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using Newtonsoft.Json;
 using PmaEntities;
+using Repository;
 
 namespace ParseLogs
 {
     public class PmaLogProcessor
     {
-        private string m_serverUri;
         private const int ChunckSize = 5000;
-        public PmaLogProcessor(string serverUri)
+        private readonly RequestedBundleInfo m_bundleInfo;
+
+        public PmaLogProcessor(RequestedBundleInfo bundleInfo)
         {
-            m_serverUri = serverUri;
+            m_bundleInfo = bundleInfo;
         }
-        public void ProcessLogs(string protectedLogFileName, string recoveryLogFileName)
+        public void ProcessLogs()
         {
+            //TODO: Yaniv - calculate the requested fileds from m_bundleInfo
+            string protectedLogFileName = string.Empty;
+            string recoveryLogFileName = string.Empty;
             PmaLogParser logParser = new PmaLogParser();
+            
             List<PmaRawEntity> protectedRawList = logParser.Parse(protectedLogFileName);
             List<PmaRawEntity> recoveryRawList = logParser.Parse(recoveryLogFileName);
             PmaRawEntitiesInterpulator interpolator = new PmaRawEntitiesInterpulator();
             List<PmaRawEntity> protectedPmaRawEntities = interpolator.ProcessRawList(protectedRawList);
             List<PmaRawEntity> recoveryPmaRawEntities = interpolator.ProcessRawList(recoveryRawList);
 
-            List<PmaRawEntity> mergedPmaRawEntities = interpolator.MergeLists(protectedPmaRawEntities,
-                recoveryPmaRawEntities);
+            List<PmaRawEntity> mergedPmaRawEntities = interpolator.MergeLists(protectedPmaRawEntities, recoveryPmaRawEntities);
 
             SendDataToServerInChuncks(mergedPmaRawEntities);
         }
@@ -42,27 +44,8 @@ namespace ParseLogs
 
         private void SendDataToServer(List<PmaRawEntity> pmaEntities)
         {
-            var httpWebRequest = (HttpWebRequest)WebRequest.Create(m_serverUri);
-            httpWebRequest.ContentType = "application/json";
-            httpWebRequest.Method = "POST";
-
-            using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
-            {
-
-                // JObject o = (JObject) JToken.FromObject(pmaEntities);
-                string json = JsonConvert.SerializeObject(pmaEntities);//"{\"user\":\"test\"," +
-                                                                       //"\"password\":\"bla\"}";
-
-                streamWriter.Write(json);
-                streamWriter.Flush();
-                streamWriter.Close();
-            }
-
-            var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-            using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-            {
-                var result = streamReader.ReadToEnd();
-            }
+            PmaRepository pmaRepository = new PmaRepository();
+            pmaRepository.SetData(m_bundleInfo, pmaEntities);
         }
     }
 }

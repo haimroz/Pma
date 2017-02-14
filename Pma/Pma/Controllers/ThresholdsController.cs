@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Web.Http;
 using PmaEntities;
+using Ppa.Controllers.OldCode;
 
 namespace Ppa.Controllers
 {
@@ -14,7 +15,7 @@ namespace Ppa.Controllers
 
         public Dictionary<DateTime, Dictionary<string, int>> Get()
         {
-            var pmaCtrl = new PmaController();
+            var pmaCtrl = new PmaControllerOld();
             var pmaRawEntities = pmaCtrl.Get();
             var res = new Dictionary<DateTime, Dictionary<string, int>>();
 //            foreach (PmaRawEntity rawEntity in pmaRawEntities)

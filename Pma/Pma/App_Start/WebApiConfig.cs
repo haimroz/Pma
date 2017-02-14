@@ -12,6 +12,9 @@ namespace Ppa
     {
         public static void Register(HttpConfiguration config)
         {
+            // New code
+            config.EnableCors();
+
             // Web API configuration and services
             // Configure Web API to use only bearer token authentication.
             config.SuppressDefaultHostAuthentication();

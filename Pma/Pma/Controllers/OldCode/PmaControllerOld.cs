@@ -1,22 +1,37 @@
 ﻿using System;
-using System.IO;
+using System.Collections.Generic;
+using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Cors;
-using ParseLogs;
 using PmaEntities;
-using Repository;
+using Ppa.Services;
+using Ppa.Services.OldCode;
 
-namespace Ppa.Controllers
+namespace Ppa.Controllers.OldCode
 {
     [EnableCors(origins: "http://localhost:8000", headers: " *", methods: "*")]
-    public class PmaController : ApiController
+    public class PmaControllerOld : ApiController
     {
-        private readonly PmaRepository m_pmaRepository;
+        private readonly PmaRepositoryOld m_pmaRepository;
 
-        public PmaController()
+        public PmaControllerOld()
         {
-            m_pmaRepository = new PmaRepository();
+            m_pmaRepository = new PmaRepositoryOld();
         }
+
+        // GET api/Pma/GetPmaData?returnUrl=%2F&generateState=true
+        //        public PmaRawEntity[] GetOldOld()
+        //        {
+        //            return m_pmaRepository.GetFilteredData(DateTime.MinValue, DateTime.MaxValue);
+        //            //return m_pmaRepository.GetAll();
+        //        }
+
+        //        public PmaRawEntityWithLimit[] GetOld()
+        //        {
+        //            return m_pmaRepository.GetFilteredData1(DateTime.MinValue, DateTime.MaxValue);
+        //        }
+
+
 
         // Define new API named: Parse
         // Input parameters: 1. Direcory (Path) 2. Protected Vra Name 3. Recovery Vra name
@@ -24,33 +39,22 @@ namespace Ppa.Controllers
 
 
         // We can add input parameter to get which consist: handle unique name
-        //        public PmaTimstampData[] GetOld()
-        //        {
-        //            PmaTimstampData[] pmaData = m_pmaRepository.GetFilteredData2(DateTime.MinValue, DateTime.MaxValue);
-        //            SetRangeOfInvalidDueToNetworkingIssue(pmaData);
-        //            return pmaData;
-        //        }
-
-        public PmaTimstampData[] GetPmaData([FromUri] string bundleDirPath, [FromUri] string protectedVraName, [FromUri] string recoveryVraName)
+        public PmaTimstampData[] Get()
         {
-            if (!File.Exists(bundleDirPath))
-            {
-                throw new Exception($"File not exist: {bundleDirPath}");
-            }
-
-            RequestedBundleInfo bundleInfo = new RequestedBundleInfo(bundleDirPath, protectedVraName, recoveryVraName);
-            ParseBundleLogs(bundleInfo);
-
             PmaTimstampData[] pmaData = m_pmaRepository.GetFilteredData2(DateTime.MinValue, DateTime.MaxValue);
             SetRangeOfInvalidDueToNetworkingIssue(pmaData);
             return pmaData;
         }
 
-        private void ParseBundleLogs(RequestedBundleInfo bundleInfo)
+        
+        public HttpResponseMessage Post(List<PmaRawEntity> pmaList)
         {
-            PmaLogProcessor processor = new PmaLogProcessor(bundleInfo);
-            processor.ProcessLogs();
+            m_pmaRepository.SetData(pmaList);
+            var response = Request.CreateResponse(System.Net.HttpStatusCode.Created, pmaList);
+            return response;
         }
+
+
 
         //        public PmaTimstampData[] Get([FromUri] string from, [FromUri] string to)
         //        {
@@ -109,5 +113,7 @@ namespace Ppa.Controllers
             if (protectedTcpBufferUsagePerc > 80 || recoveryTcpBufferUsagePerc > 80)
                 pmaTimstampData.IsValid = 0;
         }
+
+        
     }
 }

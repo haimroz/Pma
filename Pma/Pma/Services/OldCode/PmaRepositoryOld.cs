@@ -6,9 +6,9 @@ using System.Data.SqlClient;
 using System.Data.SqlTypes;
 using PmaEntities;
 
-namespace Ppa.Services
+namespace Ppa.Services.OldCode
 {
-    public class PmaRepository
+    public class PmaRepositoryOld
     {
 
         private const string ConnectionString =@"Server=zdb\SQLSERVER2012;Database=Pma;User Id=pma;Password=zertodata;";
