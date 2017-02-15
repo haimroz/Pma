@@ -254,3 +254,4 @@ version.info
 /dev/unittest/Zvm/UpgradeLog.htm
 /dev/unittest/Zvm/Vra.VC.db
 dev/build/logs/tmp.txt
+/Pma/.vs/config/applicationhost.config

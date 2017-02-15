@@ -29,7 +29,22 @@ namespace ParseLogs
 
             List<PmaRawEntity> mergedPmaRawEntities = interpolator.MergeLists(protectedPmaRawEntities, recoveryPmaRawEntities);
 
-            SendDataToServerInChuncks(mergedPmaRawEntities);
+            SendDataToFile(logParser.GetPmaHeaders(), mergedPmaRawEntities);
+          //  SendDataToServerInChuncks(mergedPmaRawEntities);
+        }
+
+        private void SendDataToFile(List<string> headers, List<PmaRawEntity> pmaEntities)
+        {
+            using (var streamWriter = new StreamWriter("C:\\pma\\output.txt"))
+            {
+                streamWriter.WriteLine(string.Join(",", headers.ToArray()));
+                foreach (PmaRawEntity pmaEntity in pmaEntities)
+                {
+                    streamWriter.WriteLine(pmaEntity.ToString());
+                }
+                streamWriter.Flush();
+                streamWriter.Close();
+            }
         }
 
         private void SendDataToServerInChuncks(List<PmaRawEntity> pmaEntities)

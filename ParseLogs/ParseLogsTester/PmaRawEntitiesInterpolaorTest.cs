@@ -52,7 +52,8 @@ namespace ParseLogsTester
             PmaRawEntity pmaRawEntity = new PmaRawEntity
             {
                 TimeStamp = dateTime,
-                ProtectedVolumeWriteRateMbs = Math.Abs(random.NextDouble()),
+                ProtectedIOsInDriverMBs = Math.Abs(random.NextDouble()),
+                ProtectedVolumeWriteRateMBs = Math.Abs(random.NextDouble()),
                 ProtectedVolumeCompressedWriteRateMBs = Math.Abs(random.NextDouble()),
                 ProtectedCpuPerc = random.Next(0, 100),
                 ProtectedVraBufferUsagePerc = random.Next(0, 100),
