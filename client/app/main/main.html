@@ -1,35 +1,69 @@
-<div id="chart"></div>
+<div class="main__container">
+    <div class="chart__container">
+        <div id="chart"></div>
+    </div>
 
-<div id="icons__container">
-    <div class="icon__storage"></div>
-    <div class="icon__storage-compression"></div>
-    <div class="icon__cpu"></div>
-    <div class="icon__vra"></div>
-    <div class="icon__tcp"></div>
-    <div class="icon__network"></div>
-    <div class="icon__tcp"></div>
-    <div class="icon__cpu"></div>
-    <div class="icon__vra"></div>
-    <div class="icon__pipe"></div>
-    <div class="icon__pipe"></div>
-    <div class="icon__storage"></div>
-</div>
+    <div class="icons__container">
+        <div class="icon__wrapper">
+            <div class="icon__storage"></div>
+        </div>
+        <div class="icon__wrapper">
+            <div class="icon__storage-compression"></div>
+        </div>
+        <div class="icon__wrapper">
+            <div class="icon__cpu"></div>
+        </div>
+        <div class="icon__wrapper">
+            <div class="icon__vra"></div>
+        </div>
+        <div class="icon__wrapper">
+            <div class="icon__tcp"></div>
+        </div>
+        <div class="icon__wrapper">
+            <div class="icon__network"></div>
+        </div>
+        <div class="icon__wrapper">
+            <div class="icon__tcp"></div>
+        </div>
+        <div class="icon__wrapper">
+            <div class="icon__cpu"></div>
+        </div>
+        <div class="icon__wrapper">
+            <div class="icon__vra"></div>
+        </div>
+        <div class="icon__wrapper">
+            <div class="icon__pipe"></div>
+        </div>
+        <div class="icon__wrapper">
+            <div class="icon__pipe"></div>
+        </div>
+        <div class="icon__wrapper">
+            <div class="icon__storage"></div>
+        </div>
+    </div>
 
-<div id="slider">
-    <input ng-model="value" type="text" id="mySlider1" slider options="options" ng-disabled="!data.length"/>
-</div>
+    <div class="slider__container">
+        <div class="playback-button" ng-class="{'pause': isPlayed, 'play' : !isPlayed}" ng-click="toggleButton()"></div>
+        <div id="slider">
+            <input ng-model="value" type="text" id="mySlider1" slider options="options" ng-disabled="!data.length"/>
+        </div>
+    </div>
 
-<br>
-<br>
-<br>
 
-<div ng-class="{'buttons-pause': isPlayed, 'buttons-play' : !isPlayed}" ng-click="toggleButton()"></div>
-<!--
-<div class="result-invalid" ng-show="invalidTimeSlot" ng-click="goToKB()">
-    Go to Knowledge Base ...
-</div>
--->
+    <div class="actions__container">
+        <div class="result-invalid" ng-show="showGotoKB()" ng-click="goToKB()">
+            Go to Knowledge Base ...
+        </div>
 
-<div class="result-invalid" ng-show="showGotoKB()" ng-click="goToKB()">
-    Go to Knowledge Base ...
+        <div class="slider-sensitivity">
+            Auto-Play Sensitivity:<input type="number" min="1" max="20" ng-model="sliderSensitivity"
+                                         ng-change="onSliderSensitivityChanged()"/>
+        </div>
+    </div>
+
+    <div class="files__container">
+        <div class="file-picker">
+            <input type="file" multiple input-file-upload-handler="onSelectedFile($event)"/>
+        </div>
+    </div>
 </div>

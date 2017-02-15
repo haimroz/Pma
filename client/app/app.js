@@ -4,7 +4,7 @@
 angular.module('myApp', [
     'ngRoute',
     'myApp.main',
-    'myApp.version',
+    'myApp.directives.inputFileUploadHandler',
     'myApp.services',
     'angularAwesomeSlider'
 ]).config(['$locationProvider', '$routeProvider', function ($locationProvider, $routeProvider) {

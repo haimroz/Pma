@@ -3,28 +3,29 @@
  */
 'use strict';
 
-var _timeout = 500; //threshold for auto-play
+const _timeFrame = 100;
+const _viewName = "viewName";
 
 angular.module('myApp.main', ['ngRoute'])
-
     .config(['$routeProvider', function ($routeProvider) {
         $routeProvider.when('/main', {
             templateUrl: 'main/main.html',
             controller: 'MainCtrl'
         });
     }])
-
     .controller('MainCtrl', ['$scope', 'serviceFactory', '$interval', '$window', function ($scope, serviceFactory, $interval, $window) {
 
         //Slider
         $scope.isPlayed = false;
         $scope.value = 0;
+        $scope.files = undefined;
+        $scope.sliderSensitivity = 5;
         $scope.Timer = null;
         $scope.options = {
             from: 0,
             to: 59,
             step: 1,
-            dimension: " sec",
+            dimension: " slot",
             smooth: true,
             realtime: true,
             css: {
@@ -39,15 +40,14 @@ angular.module('myApp.main', ['ngRoute'])
         };
         $scope.Message = 'Timer paused';
 
-        $scope.showGotoKB = function() {
-            if ($scope.data)
-            {
-                if (!$scope.data[$scope.value][13]) return true;
-            }
-            return false;
-            // return $scope.invalidTimeSlot;
-        };
 
+        $scope.showGotoKB = function () {
+            // if ($scope.data) {
+            //     if (!$scope.data[$scope.value][13]) return true;
+            // }
+            // return false;
+            return $scope.invalidTimeSlot;
+        };
         $scope.goToKB = function () {
             $window.open('https://sites.google.com/a/zerto.com/dev/home/zzz-deprecated-pages-1/vrastoragebottleneckkb');
         };
@@ -55,10 +55,19 @@ angular.module('myApp.main', ['ngRoute'])
             $scope.isPlayed = !$scope.isPlayed;
             $scope.isPlayed ? StartTimer() : StopTimer();
         };
-
+        $scope.onSliderSensitivityChanged = function () {
+            if ($scope.Timer) {
+                StopTimer();
+                StartTimer();
+            }
+        };
+        $scope.onSelectedFile = function($event){
+            $scope.files = $event.target.files;
+        };
 
         //Private
         function onGetDataSuccess(data) {
+            if (!data)return;
             $scope.data = processData(data) || [];
             $scope.thresholds = processThresholds(data) || [];
             $scope.options.to = data.length - 1;
@@ -75,7 +84,7 @@ angular.module('myApp.main', ['ngRoute'])
                 var processedTimeSlot = [];
 
                 timeSlot.PmaRawFieldList.forEach(function (item) {
-                    processedTimeSlot.push(item.Threshold);
+                    processedTimeSlot.push(parseInt(item.Threshold, 10));
                 });
 
                 result.push(processedTimeSlot);
@@ -109,48 +118,90 @@ angular.module('myApp.main', ['ngRoute'])
             // released it triggered when mouse up
             console.log(value + " " + released);
 
-            renderChart($scope.data[value], $scope.thresholds[value]);
+            loadChart($scope.data[value], $scope.thresholds[value]);
+        }
+
+        function loadChart(elements, thresholds) {
+            $scope.chart.load({
+                columns: [
+                    [_viewName].concat(elements)
+                ]
+            });
+            drawChartBarLayers(thresholds);
         }
 
         function renderChart(elements, thresholds) {
-
             $scope.chart = c3.generate({
+                size: {
+                    height: 400
+                },
+                interaction: {
+                    enabled: true
+                },
+                transition: {
+                    duration: _timeFrame * $scope.sliderSensitivity
+                },
                 data: {
-                    x: 'x',
+                    x: 'xLabels',
                     columns: [
-                        ['x', 'ProtectedVolumeWriteRateMbs', 'ProtectedVolumeCompressedWriteRateMBs', 'ProtectedCpuPerc', 'ProtectedVraBufferUsagePerc', 'ProtectedTcpBufferUsagePerc', 'NetworkOutgoingRateMBs', 'RecoveryTcpBufferUsagePerc', 'RecoveryCpuPerc', 'RecoveryVraBufferUsagePerc', 'HardeningRateMBs', 'JournalSizeMB', 'ApplyRateMBs'],
-                        elements
+                        ['xLabels',
+                            'Protected Volume Write Rate Mbs',
+                            'Protected Volume Compressed Write Rate MBs',
+                            'Protected Cpu Perc',
+                            'Protected Vra Buffer Usage Perc',
+                            'Protected Tcp Buffer Usage Perc',
+                            'Network Outgoing Rate MBs',
+                            'Recovery Tcp Buffer Usage Perc',
+                            'Recovery Cpu Perc',
+                            'Recovery Vra Buffer Usage Perc',
+                            'Hardening Rate MBs',
+                            'Journal Size MB',
+                            'ApplyRateMBs'],
+                        [_viewName].concat(elements)
                     ],
-                    type: 'bar'
+                    type: 'bar',
+                    selection: {
+                        draggable: true
+                    }
+                },
+                bar: {
+                    width: {ratio: 0.6}
                 },
                 legend: {
-                    show: false
+                    show: true
                 },
                 axis: {
                     x: {
                         type: 'category',
                         tick: {
+                            width: 100,
                             rotate: 0, //axis labels rotation angle
                             multiline: true
                         },
-                        height: 130,
-
+                        height: 70
                     },
                     y: {
                         padding: {
                             top: 50
                         },
                         tick: {
-                            format: d3.format("0.%"),
-                            values: [0, 50, 100]
-                        }
+                            values: [0, 50, 70, 100, 150, 200],
+                            centered: true,
+                            culling: true,
+                            outer: true,
+                            max: 150,
+                            count: 5
+                        },
+                        max: 200
                     }
                 }
             });
+            drawChartBarLayers(thresholds);
+        }
 
-
+        function drawChartBarLayers(thresholds) {
             // where to draw the target lines for each data point
-            var scalingFactors = thresholds;
+            var scalingFactors = ["0"].concat(thresholds);
 
             // svg layer for each bar series
             var barsLayers = $scope.chart.internal.main.selectAll('.' + c3.chart.internal.fn.CLASS.bars)[0];
@@ -158,15 +209,27 @@ angular.module('myApp.main', ['ngRoute'])
             // use the same function c3 uses to get each bars corners
             var getPoints = $scope.chart.internal.generateGetBarPoints($scope.chart.internal.getShapeIndices($scope.chart.internal.isBarType));
             // just in case there are multiple series
+
+
             $scope.chart.internal.data.targets.forEach(function (series, i) {
                 // for each point in the series
+                d3.select(barsLayers[i]).selectAll("line").remove();
+
                 series.values.forEach(function (d, j) {
                     // highlight if over threshold
+                    if (d.x === 0) {
+                        return;
+                    }
                     if (d.value > scalingFactors[j])
                         d3.select(bars[j]).classed('crossed', true);
 
                     else if (d.value === scalingFactors[j])
                         d3.select(bars[j]).classed('equal', true);
+
+                    else {
+                        d3.select(bars[j]).classed('crossed', false);
+                        d3.select(bars[j]).classed('equal', false);
+                    }
 
                     // get the position for our target lines
                     var value = d.value;
@@ -200,9 +263,9 @@ angular.module('myApp.main', ['ngRoute'])
                     return;
                 } else {
                     $scope.value++;
-                    renderChart($scope.data[$scope.value], $scope.thresholds[$scope.value]);
+                    loadChart($scope.data[$scope.value], $scope.thresholds[$scope.value]);
                 }
-            }, _timeout);
+            }, $scope.sliderSensitivity * _timeFrame);
         }
 
         function StopTimer() {
@@ -213,6 +276,7 @@ angular.module('myApp.main', ['ngRoute'])
             //Cancel the Timer.
             if (angular.isDefined($scope.Timer)) {
                 $interval.cancel($scope.Timer);
+                $scope.Timer = null;
             }
         }
 
