@@ -33,20 +33,21 @@ namespace Ppa.Controllers
         //            return pmaData;
         //        }
 
-        public PmaTimstampData[] GetPmaData([FromUri] string protectedVraName, [FromUri] string recoveryVraName)
+        public PmaTimstampData[] GetPmaData([FromUri] string protectedVraFilePath, [FromUri] string recoveryVraFilePath)
         {
-            if (!File.Exists(protectedVraName))
+            if (!File.Exists(protectedVraFilePath))
             {
-                throw new Exception($"File not exist: {protectedVraName}");
+                throw new Exception($"Protected VRA file paht doesn't exist: {protectedVraFilePath}");
             }
-            if (!File.Exists(recoveryVraName))
+            if (!File.Exists(recoveryVraFilePath))
             {
-                throw new Exception($"File not exist: {recoveryVraName}");
+                throw new Exception($"Recovery VRA file path doesn't exist: {recoveryVraFilePath}");
             }
 
-            RequestedBundleInfo bundleInfo = new RequestedBundleInfo(protectedVraName, recoveryVraName);
-            var result = ParseBundleLogs(bundleInfo);
-            return result.Take(7200).ToArray();
+            RequestedBundleInfo bundleInfo = new RequestedBundleInfo(protectedVraFilePath, recoveryVraFilePath);
+            List<PmaTimstampData> result = ParseBundleLogs(bundleInfo);
+            return result.ToArray();
+            //return result.Take(7200).ToArray();
 
 //            PmaTimstampData[] pmaData = m_pmaRepository.GetFilteredData2(DateTime.MinValue, DateTime.MaxValue);
 //            SetRangeOfInvalidDueToNetworkingIssue(pmaData);
