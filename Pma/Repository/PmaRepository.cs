@@ -33,7 +33,7 @@ namespace Repository
                     {
                         bulkCopy.WriteToServer(ConvertListToDataTable(pmaList));
                     }
-                    catch (Exception exception)
+                    catch (Exception)
                     {
                         transaction.Rollback();
                         connection.Close();
@@ -95,7 +95,7 @@ namespace Repository
                         pmaRawEntity.ProtectedCpuPerc = GetInt(reader, "ProtectedCpuPerc");
                         pmaRawEntity.ProtectedTcpBufferUsagePerc = GetInt(reader, "ProtectedTcpBufferUsagePerc");
                         pmaRawEntity.ProtectedVolumeCompressedWriteRateMBs = GetDouble(reader, "ProtectedVolumeCompressedWriteRateMBs");
-                        pmaRawEntity.ProtectedVolumeWriteRateMbs = GetDouble(reader, "ProtectedVolumeWriteRateMbs");
+                        pmaRawEntity.ProtectedVolumeWriteRateMBs = GetDouble(reader, "ProtectedVolumeWriteRateMbs");
                         pmaRawEntity.ProtectedVraBufferUsagePerc = GetInt(reader, "ProtectedVraBufferUsagePerc");
                         pmaRawEntity.RecoveryCpuPerc = GetInt(reader, "RecoveryCpuPerc");
                         pmaRawEntity.RecoveryVraBufferUsagePerc = GetInt(reader, "RecoveryVraBufferUsagePerc");
@@ -266,8 +266,6 @@ namespace Repository
             return (reader[columnName] != DBNull.Value ? reader.GetInt32(reader.GetOrdinal(columnName)) : 0);
         }
 
-        
-
         public static DataTable ConvertListToDataTable<T>(List<T> data)
         {
             PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(typeof(T));
@@ -283,7 +281,6 @@ namespace Repository
             }
             return table;
         }
-
 
         private PmaRawEntity[] GenerateDummyPmaData(int numberOfRows)
         {
@@ -304,7 +301,7 @@ namespace Repository
             PmaRawEntity pmaRawEntity = new PmaRawEntity
             {
                 TimeStamp = dateTime,
-                ProtectedVolumeWriteRateMbs = Math.Abs(random.NextDouble()),
+                ProtectedVolumeWriteRateMBs = Math.Abs(random.NextDouble()),
                 ProtectedVolumeCompressedWriteRateMBs = Math.Abs(random.NextDouble()),
                 ProtectedCpuPerc = random.Next(0, 100),
                 ProtectedVraBufferUsagePerc = random.Next(0, 100),

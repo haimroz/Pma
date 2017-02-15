@@ -1,17 +1,77 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.SqlClient;
+using System.Data.SqlServerCe;
 using System.Data.SqlTypes;
-using PmaEntities;
+using System.IO;
 
-namespace Ppa.Services.OldCode
+namespace Repository
 {
-    public class PmaRepositoryOld
+    public class PmaLocalRepository
     {
+        //private const string ConnectionString = @"Server=zdb\SQLSERVER2012;Database=Pma;User Id=pma;Password=zertodata;";
 
-        private const string ConnectionString =@"Server=zdb\SQLSERVER2012;Database=Pma;User Id=pma;Password=zertodata;";
+        private readonly string m_tempPath;
+        private string c_databaseFileName = "Pma.sdf";
+        private string m_databaseFilePath;
+        private readonly string m_connectionString;
+        private static PmaLocalRepository m_repository;
+
+        private readonly DateTime m_minimumSqlUtcDateTime = new DateTime(SqlDateTime.MinValue.Value.Ticks, DateTimeKind.Utc);
+        private readonly DateTime m_maximumSqlUtcDateTime = new DateTime(SqlDateTime.MaxValue.Value.Ticks, DateTimeKind.Utc);
+
+        public static PmaLocalRepository GetInstance()
+        {
+            if (m_repository != null)
+            {
+                return m_repository;
+            }
+            return new PmaLocalRepository();
+        }
+
+        private PmaLocalRepository()
+        {
+            m_tempPath = Path.GetTempPath();
+            m_databaseFilePath = Path.Combine(m_tempPath, c_databaseFileName);
+            m_connectionString = $"Data Source={m_databaseFilePath}; Max Database Size=256; Persist Security Info=False";
+            CreateDatabase();
+        }
+
+        private void CreateDatabase()
+        {
+            if (File.Exists(m_databaseFilePath))
+            {
+                File.Delete(m_databaseFilePath);
+            }
+
+            SqlCeEngine engine = new SqlCeEngine(m_connectionString);
+            engine.CreateDatabase();
+            //SqlCeConnection conn = null;
+        }
+
+        /*
+        public void SetData(RequestedBundleInfo bundleInfo, List<PmaRawEntity> pmaList)
+        {
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+                SqlTransaction transaction = connection.BeginTransaction();
+
+                using (var bulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction))
+                {
+                    bulkCopy.BatchSize = 100;
+                    bulkCopy.DestinationTableName = "dbo.PmaRawData";
+                    try
+                    {
+                        bulkCopy.WriteToServer(ConvertListToDataTable(pmaList));
+                    }
+                    catch (Exception)
+                    {
+                        transaction.Rollback();
+                        connection.Close();
+                    }
+                }
+                transaction.Commit();
+            }
+        }
 
         public PmaRawEntity[] GetAll()
         {
@@ -37,22 +97,9 @@ namespace Ppa.Services.OldCode
         //
         //            return GenerateDummyPmaData(1000);
         //        }
-        private readonly DateTime m_minimumSqlUtcDateTime = new DateTime(SqlDateTime.MinValue.Value.Ticks, DateTimeKind.Utc);
-        private readonly DateTime m_maximumSqlUtcDateTime = new DateTime(SqlDateTime.MaxValue.Value.Ticks, DateTimeKind.Utc);
+        
 
-        private DateTime ConvertMinMaxSqlDateTimeToDateTime(DateTime dbDateTime)
-        {
-            DateTime result = dbDateTime;
-            if (dbDateTime<m_minimumSqlUtcDateTime)
-            {
-                result = m_minimumSqlUtcDateTime;
-            }
-            if (dbDateTime>m_maximumSqlUtcDateTime)
-            {
-                result = m_maximumSqlUtcDateTime;
-            }
-            return result;
-        }
+        
         public PmaRawEntity[] GetFilteredData(DateTime from, DateTime to)
         {
             List<PmaRawEntity> pmaRawEntities = new List<PmaRawEntity>();
@@ -75,12 +122,12 @@ namespace Ppa.Services.OldCode
                         pmaRawEntity.HardeningRateMBs = GetDouble(reader, "HardeningRateMBs");
                         pmaRawEntity.JournalSizeMB = GetDouble(reader, "JournalSizeMB");
                         pmaRawEntity.NetworkOutgoingRateMBs = GetDouble(reader, "NetworkOutgoingRateMBs");
-                        pmaRawEntity.ProtectedCpuPerc= GetInt(reader, "ProtectedCpuPerc");
-                        pmaRawEntity.ProtectedTcpBufferUsagePerc= GetInt(reader, "ProtectedTcpBufferUsagePerc");
-                        pmaRawEntity.ProtectedVolumeCompressedWriteRateMBs= GetDouble(reader, "ProtectedVolumeCompressedWriteRateMBs");
+                        pmaRawEntity.ProtectedCpuPerc = GetInt(reader, "ProtectedCpuPerc");
+                        pmaRawEntity.ProtectedTcpBufferUsagePerc = GetInt(reader, "ProtectedTcpBufferUsagePerc");
+                        pmaRawEntity.ProtectedVolumeCompressedWriteRateMBs = GetDouble(reader, "ProtectedVolumeCompressedWriteRateMBs");
                         pmaRawEntity.ProtectedVolumeWriteRateMBs = GetDouble(reader, "ProtectedVolumeWriteRateMbs");
-                        pmaRawEntity.ProtectedVraBufferUsagePerc= GetInt(reader, "ProtectedVraBufferUsagePerc");
-                        pmaRawEntity.RecoveryCpuPerc= GetInt(reader, "RecoveryCpuPerc");
+                        pmaRawEntity.ProtectedVraBufferUsagePerc = GetInt(reader, "ProtectedVraBufferUsagePerc");
+                        pmaRawEntity.RecoveryCpuPerc = GetInt(reader, "RecoveryCpuPerc");
                         pmaRawEntity.RecoveryVraBufferUsagePerc = GetInt(reader, "RecoveryVraBufferUsagePerc");
                         pmaRawEntity.RecoveryTcpBufferUsagePerc = GetInt(reader, "RecoveryTcpBufferUsagePerc");
                         pmaRawEntities.Add(pmaRawEntity);
@@ -217,7 +264,7 @@ namespace Ppa.Services.OldCode
             object value = reader[fieldName];
             int threshold = 1000;
             int isValid = 0;
-            if (value.GetType() == typeof (double))
+            if (value.GetType() == typeof(double))
             {
                 threshold = 1000;
                 isValid = 1;
@@ -226,7 +273,7 @@ namespace Ppa.Services.OldCode
                     value = 0.0;
                 }
             }
-            else if (value.GetType() == typeof (int))
+            else if (value.GetType() == typeof(int))
             {
                 if ((int)value <= 0)
                 {
@@ -247,31 +294,6 @@ namespace Ppa.Services.OldCode
         private int GetInt(SqlDataReader reader, string columnName)
         {
             return (reader[columnName] != DBNull.Value ? reader.GetInt32(reader.GetOrdinal(columnName)) : 0);
-        }
-
-        public void SetData(List<PmaRawEntity> pmaList)
-        {
-            using (var connection = new SqlConnection(ConnectionString))
-            {
-                connection.Open();
-                SqlTransaction transaction = connection.BeginTransaction();
-
-                using (var bulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction))
-                {
-                    bulkCopy.BatchSize = 100;
-                    bulkCopy.DestinationTableName = "dbo.PmaRawData";
-                    try
-                    {
-                        bulkCopy.WriteToServer(ConvertListToDataTable(pmaList));
-                    }
-                    catch (Exception exception)
-                    {
-                        transaction.Rollback();
-                        connection.Close();
-                    }
-                }
-                transaction.Commit();
-            }
         }
 
         public static DataTable ConvertListToDataTable<T>(List<T> data)
@@ -338,5 +360,19 @@ namespace Ppa.Services.OldCode
 
             return pmaRawEntity;
         }
+
+        private DateTime ConvertMinMaxSqlDateTimeToDateTime(DateTime dbDateTime)
+        {
+            DateTime result = dbDateTime;
+            if (dbDateTime < m_minimumSqlUtcDateTime)
+            {
+                result = m_minimumSqlUtcDateTime;
+            }
+            if (dbDateTime > m_maximumSqlUtcDateTime)
+            {
+                result = m_maximumSqlUtcDateTime;
+            }
+            return result;
+        }*/
     }
 }

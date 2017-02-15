@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using ParseLogs;
@@ -31,35 +33,35 @@ namespace Ppa.Controllers
         //            return pmaData;
         //        }
 
-        public PmaTimstampData[] GetPmaData([FromUri] string bundleDirPath, [FromUri] string protectedVraName, [FromUri] string recoveryVraName)
+        public PmaTimstampData[] GetPmaData([FromUri] string protectedVraName, [FromUri] string recoveryVraName)
         {
-            if (!File.Exists(bundleDirPath))
+            if (!File.Exists(protectedVraName))
             {
-                throw new Exception($"File not exist: {bundleDirPath}");
+                throw new Exception($"File not exist: {protectedVraName}");
+            }
+            if (!File.Exists(recoveryVraName))
+            {
+                throw new Exception($"File not exist: {recoveryVraName}");
             }
 
-            RequestedBundleInfo bundleInfo = new RequestedBundleInfo(bundleDirPath, protectedVraName, recoveryVraName);
-            ParseBundleLogs(bundleInfo);
+            RequestedBundleInfo bundleInfo = new RequestedBundleInfo(protectedVraName, recoveryVraName);
+            var result = ParseBundleLogs(bundleInfo);
+            return result.Take(7200).ToArray();
 
-            PmaTimstampData[] pmaData = m_pmaRepository.GetFilteredData2(DateTime.MinValue, DateTime.MaxValue);
-            SetRangeOfInvalidDueToNetworkingIssue(pmaData);
-            return pmaData;
+//            PmaTimstampData[] pmaData = m_pmaRepository.GetFilteredData2(DateTime.MinValue, DateTime.MaxValue);
+//            SetRangeOfInvalidDueToNetworkingIssue(pmaData);
+//            return pmaData;
         }
 
-        private void ParseBundleLogs(RequestedBundleInfo bundleInfo)
+        private List<PmaTimstampData> ParseBundleLogs(RequestedBundleInfo bundleInfo)
         {
             PmaLogProcessor processor = new PmaLogProcessor(bundleInfo);
-            processor.ProcessLogs();
-        }
+            return processor.ProcessLogs();
 
-        //        public PmaTimstampData[] Get([FromUri] string from, [FromUri] string to)
-        //        {
-        //            var fromDateTime = DateTime.Parse(@from);
-        //            var toDateTime = DateTime.Parse(to);
-        //            PmaTimstampData[] pmaData = m_pmaRepository.GetFilteredData2(fromDateTime, toDateTime);
-        //            SetRangeOfInvalidDueToNetworkingIssue(pmaData);
-        //            return pmaData;
-        //        }
+//            PmaTimstampData[] pmaData = m_pmaRepository.GetFilteredData2(DateTime.MinValue, DateTime.MaxValue);
+//            SetRangeOfInvalidDueToNetworkingIssue(pmaData);
+//            return pmaData;
+        }
 
         private static void SetRangeOfInvalidDueToNetworkingIssue(PmaTimstampData[] pmaData)
         {
@@ -109,5 +111,14 @@ namespace Ppa.Controllers
             if (protectedTcpBufferUsagePerc > 80 || recoveryTcpBufferUsagePerc > 80)
                 pmaTimstampData.IsValid = 0;
         }
+
+        //        public PmaTimstampData[] Get([FromUri] string from, [FromUri] string to)
+        //        {
+        //            var fromDateTime = DateTime.Parse(@from);
+        //            var toDateTime = DateTime.Parse(to);
+        //            PmaTimstampData[] pmaData = m_pmaRepository.GetFilteredData2(fromDateTime, toDateTime);
+        //            SetRangeOfInvalidDueToNetworkingIssue(pmaData);
+        //            return pmaData;
+        //        }
     }
 }

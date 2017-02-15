@@ -2,15 +2,13 @@
 {
     public class RequestedBundleInfo
     {
-        public string BundleDirPath { get; }
-        public string ProtectedVraName { get; }
-        public string RecoveryVraName { get; }
+        public string ProtectedVraFilePath { get; }
+        public string RecoveryVraFilePath { get; }
 
-        public RequestedBundleInfo(string bundleDirPath, string protectedVraName, string recoveryVraName)
+        public RequestedBundleInfo(string protectedVraFilePath, string recoveryVraFilePath)
         {
-            BundleDirPath = bundleDirPath;
-            ProtectedVraName = protectedVraName;
-            RecoveryVraName = recoveryVraName;
+            ProtectedVraFilePath = protectedVraFilePath;
+            RecoveryVraFilePath = recoveryVraFilePath;
         }
     }
 }
