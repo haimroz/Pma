@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PmaServer", "Pma\PmaServer.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PmaEntities", "..\PmaEntities\PmaEntities.csproj", "{1098590E-A0DD-4A05-89DE-E2835F5141A8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PmaLogProcessor", "..\ParseLogs\ParseLogs\PmaLogProcessor.csproj", "{89861FC1-EFDF-4B5A-A5E9-6407B29B0EEF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repository", "Repository\Repository.csproj", "{F86A6DCA-8A12-4E94-B367-798676EC427B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{1098590E-A0DD-4A05-89DE-E2835F5141A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1098590E-A0DD-4A05-89DE-E2835F5141A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1098590E-A0DD-4A05-89DE-E2835F5141A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89861FC1-EFDF-4B5A-A5E9-6407B29B0EEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89861FC1-EFDF-4B5A-A5E9-6407B29B0EEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89861FC1-EFDF-4B5A-A5E9-6407B29B0EEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89861FC1-EFDF-4B5A-A5E9-6407B29B0EEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F86A6DCA-8A12-4E94-B367-798676EC427B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F86A6DCA-8A12-4E94-B367-798676EC427B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F86A6DCA-8A12-4E94-B367-798676EC427B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F86A6DCA-8A12-4E94-B367-798676EC427B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
