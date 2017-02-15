@@ -40,6 +40,11 @@ namespace ParseLogs
                 newItem.RecoveryCpuPerc = 0;
             if (newItem.RecoveryVraBufferUsagePerc == -1)
                 newItem.RecoveryVraBufferUsagePerc = 0;
+            if (newItem.HardeningRateMBs == -1)
+                newItem.HardeningRateMBs = 0;
+            else//fixing logparser/zvm bug that treats the LBs as Bytes
+                newItem.HardeningRateMBs *= 512;
+
             if (newItem.ApplyRateMBs == -1)
                 newItem.ApplyRateMBs = 0;
 
@@ -74,7 +79,7 @@ namespace ParseLogs
                     if (match.RecoveryVraBufferUsagePerc != -1)
                         entity.RecoveryVraBufferUsagePerc = match.RecoveryVraBufferUsagePerc;
                     if (match.HardeningRateMBs != -1)
-                        entity.HardeningRateMBs = match.HardeningRateMBs;
+                        entity.HardeningRateMBs = match.HardeningRateMBs * 512; //fixing logparser/zvm bug that treats the LBs as Bytes
                     if (match.ApplyRateMBs != -1)
                         entity.ApplyRateMBs = match.ApplyRateMBs;
                 }

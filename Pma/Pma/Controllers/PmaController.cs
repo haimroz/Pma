@@ -47,7 +47,7 @@ namespace Ppa.Controllers
             RequestedBundleInfo bundleInfo = new RequestedBundleInfo(protectedVraFilePath, recoveryVraFilePath);
             List<PmaTimstampData> result = ParseBundleLogs(bundleInfo);
             return result.ToArray();
-            //return result.Take(7200).ToArray();
+            //return result.Take(5000).ToArray();
 
 //            PmaTimstampData[] pmaData = m_pmaRepository.GetFilteredData2(DateTime.MinValue, DateTime.MaxValue);
 //            SetRangeOfInvalidDueToNetworkingIssue(pmaData);
