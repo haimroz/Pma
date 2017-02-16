@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Web.Http;
@@ -13,27 +14,52 @@ namespace Ppa.Controllers
     [EnableCors(origins: "http://localhost:8000", headers: " *", methods: "*")]
     public class PmaController : ApiController
     {
-        private readonly PmaRepository m_pmaRepository;
+        //private readonly PmaRepository m_pmaRepository;
+        //private OrderedDictionary _mOrderedCache;
+        //private readonly Dictionary<RequestedBundleInfo, PmaInfo> m_cachedPma;
+        //private static readonly object _mLock = new object();
 
         public PmaController()
         {
-            m_pmaRepository = new PmaRepository();
+            //m_pmaRepository = new PmaRepository();
+            //_mOrderedCache = new OrderedDictionary(10);
         }
 
-        // Define new API named: Parse
-        // Input parameters: 1. Direcory (Path) 2. Protected Vra Name 3. Recovery Vra name
-        // Output: 1. parsed raw counts 2. from (minimum parse date) 3. to (maximum parse date) 4. handle to parsed filename/table name ...
+        public PmaInfo GetPmaData(
+            [FromUri] string protectedVraFilePath,
+            [FromUri] string recoveryVraFilePath, 
+            [FromUri] int pageSize, 
+            [FromUri] int pageNumber)
+        {
+            //int pageNumber = 0;
 
+            Validate(protectedVraFilePath, recoveryVraFilePath, pageSize, pageNumber);
 
-        // We can add input parameter to get which consist: handle unique name
-        //        public PmaTimstampData[] GetOld()
-        //        {
-        //            PmaTimstampData[] pmaData = m_pmaRepository.GetFilteredData2(DateTime.MinValue, DateTime.MaxValue);
-        //            SetRangeOfInvalidDueToNetworkingIssue(pmaData);
-        //            return pmaData;
-        //        }
+            RequestedBundleInfo bundleInfo = new RequestedBundleInfo(protectedVraFilePath, recoveryVraFilePath);
+            List<PmaTimstampData> allPmaData = ParseBundleLogs(bundleInfo);
+            PmaInfo pmaInfo = new PmaInfo(allPmaData.Count, allPmaData);
+            return GetRequestedPage(pmaInfo, pageSize, pageNumber-1);
 
-        public PmaTimstampData[] GetPmaData([FromUri] string protectedVraFilePath, [FromUri] string recoveryVraFilePath)
+            //            lock (_mLock)
+            //            {
+            //                PmaInfo pmaInfo;
+            //                if (_mOrderedCache.Contains(bundleInfo))
+            //                {
+            //                    pmaInfo = (PmaInfo)_mOrderedCache[bundleInfo];
+            //                    return GetRequestedPage(pmaInfo, pageSize, pageNumber);
+            //                }
+            //                List<PmaTimstampData> allPmaData = ParseBundleLogs(bundleInfo);
+            //                pmaInfo = new PmaInfo(allPmaData.Count, allPmaData);
+            //                _mOrderedCache.Add(bundleInfo, pmaInfo);
+            //                return GetRequestedPage(pmaInfo, pageSize, pageNumber);
+            //            }
+        }
+
+        private void Validate(
+            string protectedVraFilePath,
+            string recoveryVraFilePath,
+            int pageSize,
+            int pageNumber)
         {
             if (!File.Exists(protectedVraFilePath))
             {
@@ -43,25 +69,30 @@ namespace Ppa.Controllers
             {
                 throw new Exception($"Recovery VRA file path doesn't exist: {recoveryVraFilePath}");
             }
+            if (pageSize < 1 || pageSize > 3000)
+            {
+                throw new Exception($"PageSize value must be between 1 to 3000. requested page size: {pageSize}");
+            }
+            if (pageNumber < 1)
+            {
+                throw new Exception($"pageNumber value must be between 1 to 3000. requested pageNumber: {pageNumber}");
+            }
+        }
 
-            RequestedBundleInfo bundleInfo = new RequestedBundleInfo(protectedVraFilePath, recoveryVraFilePath);
-            List<PmaTimstampData> result = ParseBundleLogs(bundleInfo);
-            return result.ToArray();
-            //return result.Take(5000).ToArray();
+        private PmaInfo GetRequestedPage(PmaInfo pmaInfo, int pageSize, int pageNumber)
+        {
+            var allPmaData = pmaInfo.PmaData;
+            List<PmaTimstampData> fetchedPage =
+                allPmaData.Skip(pageNumber*pageSize).Take(pageSize).ToList();
 
-//            PmaTimstampData[] pmaData = m_pmaRepository.GetFilteredData2(DateTime.MinValue, DateTime.MaxValue);
-//            SetRangeOfInvalidDueToNetworkingIssue(pmaData);
-//            return pmaData;
+            PmaInfo result = new PmaInfo(pmaInfo.Count, fetchedPage);
+            return result;
         }
 
         private List<PmaTimstampData> ParseBundleLogs(RequestedBundleInfo bundleInfo)
         {
             PmaLogProcessor processor = new PmaLogProcessor(bundleInfo);
             return processor.ProcessLogs();
-
-//            PmaTimstampData[] pmaData = m_pmaRepository.GetFilteredData2(DateTime.MinValue, DateTime.MaxValue);
-//            SetRangeOfInvalidDueToNetworkingIssue(pmaData);
-//            return pmaData;
         }
 
         private static void SetRangeOfInvalidDueToNetworkingIssue(PmaTimstampData[] pmaData)
