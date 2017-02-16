@@ -1,24 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Cors;
-using ParseLogs;
 using PmaEntities;
-using Repository;
+using Ppa.Services;
+using Ppa.Services.OldCode;
 
-namespace Ppa.Controllers
+namespace Ppa.Controllers.OldCode
 {
     [EnableCors(origins: "http://localhost:8000", headers: " *", methods: "*")]
-    public class PmaController : ApiController
+    public class PmaControllerOld : ApiController
     {
-        private readonly PmaRepository m_pmaRepository;
+        private readonly PmaRepositoryOld m_pmaRepository;
 
-        public PmaController()
+        public PmaControllerOld()
         {
-            m_pmaRepository = new PmaRepository();
+            m_pmaRepository = new PmaRepositoryOld();
         }
+
+        // GET api/Pma/GetPmaData?returnUrl=%2F&generateState=true
+        //        public PmaRawEntity[] GetOldOld()
+        //        {
+        //            return m_pmaRepository.GetFilteredData(DateTime.MinValue, DateTime.MaxValue);
+        //            //return m_pmaRepository.GetAll();
+        //        }
+
+        //        public PmaRawEntityWithLimit[] GetOld()
+        //        {
+        //            return m_pmaRepository.GetFilteredData1(DateTime.MinValue, DateTime.MaxValue);
+        //        }
+
+
 
         // Define new API named: Parse
         // Input parameters: 1. Direcory (Path) 2. Protected Vra Name 3. Recovery Vra name
@@ -26,43 +39,31 @@ namespace Ppa.Controllers
 
 
         // We can add input parameter to get which consist: handle unique name
-        //        public PmaTimstampData[] GetOld()
+        public PmaTimstampData[] Get()
+        {
+            PmaTimstampData[] pmaData = m_pmaRepository.GetFilteredData2(DateTime.MinValue, DateTime.MaxValue);
+            SetRangeOfInvalidDueToNetworkingIssue(pmaData);
+            return pmaData;
+        }
+
+        
+        public HttpResponseMessage Post(List<PmaRawEntity> pmaList)
+        {
+            m_pmaRepository.SetData(pmaList);
+            var response = Request.CreateResponse(System.Net.HttpStatusCode.Created, pmaList);
+            return response;
+        }
+
+
+
+        //        public PmaTimstampData[] Get([FromUri] string from, [FromUri] string to)
         //        {
-        //            PmaTimstampData[] pmaData = m_pmaRepository.GetFilteredData2(DateTime.MinValue, DateTime.MaxValue);
+        //            var fromDateTime = DateTime.Parse(@from);
+        //            var toDateTime = DateTime.Parse(to);
+        //            PmaTimstampData[] pmaData = m_pmaRepository.GetFilteredData2(fromDateTime, toDateTime);
         //            SetRangeOfInvalidDueToNetworkingIssue(pmaData);
         //            return pmaData;
         //        }
-
-        public PmaTimstampData[] GetPmaData([FromUri] string protectedVraFilePath, [FromUri] string recoveryVraFilePath)
-        {
-            if (!File.Exists(protectedVraFilePath))
-            {
-                throw new Exception($"Protected VRA file paht doesn't exist: {protectedVraFilePath}");
-            }
-            if (!File.Exists(recoveryVraFilePath))
-            {
-                throw new Exception($"Recovery VRA file path doesn't exist: {recoveryVraFilePath}");
-            }
-
-            RequestedBundleInfo bundleInfo = new RequestedBundleInfo(protectedVraFilePath, recoveryVraFilePath);
-            List<PmaTimstampData> result = ParseBundleLogs(bundleInfo);
-            return result.ToArray();
-            //return result.Take(5000).ToArray();
-
-//            PmaTimstampData[] pmaData = m_pmaRepository.GetFilteredData2(DateTime.MinValue, DateTime.MaxValue);
-//            SetRangeOfInvalidDueToNetworkingIssue(pmaData);
-//            return pmaData;
-        }
-
-        private List<PmaTimstampData> ParseBundleLogs(RequestedBundleInfo bundleInfo)
-        {
-            PmaLogProcessor processor = new PmaLogProcessor(bundleInfo);
-            return processor.ProcessLogs();
-
-//            PmaTimstampData[] pmaData = m_pmaRepository.GetFilteredData2(DateTime.MinValue, DateTime.MaxValue);
-//            SetRangeOfInvalidDueToNetworkingIssue(pmaData);
-//            return pmaData;
-        }
 
         private static void SetRangeOfInvalidDueToNetworkingIssue(PmaTimstampData[] pmaData)
         {
@@ -113,13 +114,6 @@ namespace Ppa.Controllers
                 pmaTimstampData.IsValid = 0;
         }
 
-        //        public PmaTimstampData[] Get([FromUri] string from, [FromUri] string to)
-        //        {
-        //            var fromDateTime = DateTime.Parse(@from);
-        //            var toDateTime = DateTime.Parse(to);
-        //            PmaTimstampData[] pmaData = m_pmaRepository.GetFilteredData2(fromDateTime, toDateTime);
-        //            SetRangeOfInvalidDueToNetworkingIssue(pmaData);
-        //            return pmaData;
-        //        }
+        
     }
 }

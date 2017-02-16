@@ -30,9 +30,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\Pma\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -44,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="OldCode\PmaLogProcessorOld.cs" />
     <Compile Include="PmaLogParser.cs" />
     <Compile Include="PmaLogProcessor.cs" />
     <Compile Include="PmaRawEntitiesInterpulator.cs" />
@@ -56,6 +56,10 @@
     <ProjectReference Include="..\..\PmaEntities\PmaEntities.csproj">
       <Project>{1098590E-A0DD-4A05-89DE-E2835F5141A8}</Project>
       <Name>PmaEntities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Pma\Repository\Repository.csproj">
+      <Project>{F86A6DCA-8A12-4E94-B367-798676EC427B}</Project>
+      <Name>Repository</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
