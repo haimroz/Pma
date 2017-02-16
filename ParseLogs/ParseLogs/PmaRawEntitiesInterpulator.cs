@@ -10,7 +10,7 @@ namespace ParseLogs
         public List<PmaRawEntity> ProcessRawList(List<PmaRawEntity> rawList)
         {
             List<PmaRawEntity> newList = new List<PmaRawEntity>();
-            if (rawList.Count == 0)
+            if (rawList.Count <= 1)
                 return null;
             DateTime start = rawList.First().TimeStamp;
             DateTime finish = rawList.Last().TimeStamp;
@@ -40,19 +40,33 @@ namespace ParseLogs
                 newItem.RecoveryCpuPerc = 0;
             if (newItem.RecoveryVraBufferUsagePerc == -1)
                 newItem.RecoveryVraBufferUsagePerc = 0;
+            if (newItem.HardeningRateMBs == -1)
+                newItem.HardeningRateMBs = 0;
+            else//fixing logparser/zvm bug that treats the LBs as Bytes
+                newItem.HardeningRateMBs *= 512;
+
             if (newItem.ApplyRateMBs == -1)
                 newItem.ApplyRateMBs = 0;
 
             newList.Add(newItem);
 
+            int indexInRaw = 1;
+            int numSkips = 0;
+
             for (current = current.AddSeconds(1); current <= finish; current = current.AddSeconds(1))
             {
                 PmaRawEntity entity = new PmaRawEntity(newList.Last());
-                IEnumerable<PmaRawEntity> matches = rawList.Where(obj => obj.TimeStamp == current);
                 entity.TimeStamp = current;
-                if (matches.Count() > 0)
+                //IEnumerable<PmaRawEntity> matches = rawList.Where(obj => obj.TimeStamp == current);
+                //if (matches.Count() > 0)
+                if (rawList[indexInRaw].TimeStamp < current)
                 {
-                    PmaRawEntity match = matches.First();
+                    throw new Exception("My incremental time stamp passed the timestamp in the file line num" + indexInRaw);
+                }
+                if (rawList[indexInRaw].TimeStamp == current)
+                {
+                    //PmaRawEntity match = matches.First();
+                    PmaRawEntity match = rawList[indexInRaw];
                     if (match.ProtectedIOsInDriverMBs != -1)
                         entity.ProtectedIOsInDriverMBs = match.ProtectedIOsInDriverMBs;
                     if (match.ProtectedVolumeWriteRateMBs != -1)
@@ -74,9 +88,17 @@ namespace ParseLogs
                     if (match.RecoveryVraBufferUsagePerc != -1)
                         entity.RecoveryVraBufferUsagePerc = match.RecoveryVraBufferUsagePerc;
                     if (match.HardeningRateMBs != -1)
-                        entity.HardeningRateMBs = match.HardeningRateMBs;
+                        entity.HardeningRateMBs = match.HardeningRateMBs * 512; //fixing logparser/zvm bug that treats the LBs as Bytes
                     if (match.ApplyRateMBs != -1)
                         entity.ApplyRateMBs = match.ApplyRateMBs;
+                    indexInRaw++;
+
+                    while ((indexInRaw < rawList.Count) && rawList[indexInRaw].TimeStamp == current)
+                    {
+                        //TODO research what are these skips. It means two entries with the same time stamp.
+                        numSkips++;
+                        indexInRaw++;
+                    }
                 }
                 newList.Add(entity);
             }

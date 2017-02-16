@@ -9,8 +9,13 @@ namespace PmaEntities
     {
         [DataMember]
         public List<PmaRawFieldData> PmaRawFieldList { get; set; }
+
         [DataMember]
         public int IsValid { get; set; }
+
+        [DataMember]
+        public int Index { get; set; }
+
         [DataMember]
         public DateTime TimeStamp { get; set; }
     }
