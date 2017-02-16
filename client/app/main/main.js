@@ -18,7 +18,8 @@ angular.module('myApp.main', ['ngRoute'])
         //Slider
         $scope.isPlayed = false;
         $scope.value = 0;
-        $scope.files = undefined;
+        $scope.protectedVraFilePath = undefined;
+        $scope.recoveryVraFilePath = undefined;
         $scope.sliderSensitivity = 5;
         $scope.Timer = null;
         $scope.options = {
@@ -61,8 +62,21 @@ angular.module('myApp.main', ['ngRoute'])
                 StartTimer();
             }
         };
-        $scope.onSelectedFile = function($event){
-            $scope.files = $event.target.files;
+        $scope.onSelectedFile = function ($event, fileType) {
+            if (fileType === 'protectedVraFilePath') {
+                $scope.protectedVraFilePath = $event.target.files
+            } else if (fileType === 'recoveryVraFilePath') {
+
+                $scope.recoveryVraFilePath = $event.target.files;
+            }
+            console.log(fileType);
+        };
+
+        $scope.onClickParseLogs = function () {
+            if ($scope.protectedVraFilePath && $scope.recoveryVraFilePath) {
+                serviceFactory.getData($scope.protectedVraFilePath, $scope.recoveryVraFilePath)
+                    .then(onGetDataSuccess);
+            }
         };
 
         //Private
@@ -280,5 +294,6 @@ angular.module('myApp.main', ['ngRoute'])
             }
         }
 
-        serviceFactory.getData().then(onGetDataSuccess);
+        serviceFactory.getData($scope.protectedVraFilePath, $scope.recoveryVraFilePath)
+            .then(onGetDataSuccess);
     }]);

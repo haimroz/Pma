@@ -59,11 +59,28 @@
             Auto-Play Sensitivity:<input type="number" min="1" max="20" ng-model="sliderSensitivity"
                                          ng-change="onSliderSensitivityChanged()"/>
         </div>
+
+        <div class="pager-wrapper">
+            <div class="arrow-left">Previous</div>
+            <div class="pager-info">
+                <span class="info-big">Page {{1}}</span>
+                <span class="info-small">of {{55}}</span>
+            </div>
+            <div class="arrow-right">Next</div>
+        </div>
     </div>
 
     <div class="files__container">
         <div class="file-picker">
-            <input type="file" multiple input-file-upload-handler="onSelectedFile($event)"/>
+            Protected Vra File:<input type="file" accept="*/*" input-file-upload-handler="onSelectedFile($event,'protectedVraFilePath')"/>
+        </div>
+
+        <div class="file-picker">
+            Recovery Vra File:<input type="file" accept="*/*" input-file-upload-handler="onSelectedFile($event,'recoveryVraFilePath')"/>
+        </div>
+
+        <div class="button-parse" ng-click="onClickParseLogs()">
+            Parse
         </div>
     </div>
 </div>
