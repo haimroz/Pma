@@ -5,10 +5,17 @@ angular.module('myApp.services', [])
     .factory('serviceFactory', ['$q', '$http', function ($q, $http) {
         var serviceFactory = {};
 
-        serviceFactory.getData = function () {
+        serviceFactory.getData = function (protectedVraFilePath, recoveryVraFilePath, pageSize, pageIndex) {
+            pageIndex = pageIndex || 1;
+            var url =
+                'http://localhost:57904/api/pma?protectedVraFilePath=' + protectedVraFilePath +
+                '&recoveryVraFilePath=' + recoveryVraFilePath +
+                '&pageSize=' + pageSize +
+                '&pageNumber=' + pageIndex;
+
             return $http({
                 method: 'GET',
-                url: 'http://localhost:57904/api/pma'
+                url: url
             }).then(function successCallback(response) {
                 // this callback will be called asynchronously
                 // when the response is available

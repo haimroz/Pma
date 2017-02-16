@@ -29,23 +29,23 @@ namespace ParseLogs
             List<PmaRawEntity> recoveryPmaRawEntities = interpolator.BuildInterpolatedList(recoveryRawList);
             List<PmaRawEntity> mergedPmaRawEntities = interpolator.MergeLists(protectedPmaRawEntities, recoveryPmaRawEntities);
 
-            foreach (PmaRawEntity pmaRawEntity in mergedPmaRawEntities)
+            for (int i = 0; i < mergedPmaRawEntities.Count; i++)
             {
-                pmaData.Add(PopulatePmaData(pmaRawEntity));
+                PmaRawEntity pmaRawEntity = mergedPmaRawEntities[i];
+                pmaData.Add(PopulatePmaData(pmaRawEntity, i+1));
             }
 
             //TODO: Nathaniel Go Over PmaRepository.GetFilteredData2 and copy puplation logic and return PmaData
-
             //SendDataToFile(logParser.GetPmaHeaders(), mergedPmaRawEntities);
             //SendDataToServerInChuncks(mergedPmaRawEntities);
-
             return pmaData;
         }
 
-        private static PmaTimstampData PopulatePmaData(PmaRawEntity pmaRawEntity)
+        private static PmaTimstampData PopulatePmaData(PmaRawEntity pmaRawEntity, int index)
         {
             PmaTimstampData pmaTimstampData = new PmaTimstampData();
 
+            pmaTimstampData.Index = index;
             pmaTimstampData.IsValid = 1;
             pmaTimstampData.TimeStamp = pmaRawEntity.TimeStamp;
 
