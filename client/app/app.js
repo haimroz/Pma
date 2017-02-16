@@ -4,6 +4,7 @@
 angular.module('myApp', [
     'ngRoute',
     'myApp.main',
+    'myApp.loader',
     'myApp.services',
     'angularAwesomeSlider'
 ]).config(['$locationProvider', '$routeProvider', function ($locationProvider, $routeProvider) {

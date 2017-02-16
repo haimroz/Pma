@@ -1,4 +1,7 @@
 <div class="main__container">
+    <div class="loader__container" ng-show="showLoader">
+        <Loader/>
+    </div>
     <div class="chart__container">
         <div id="chart"></div>
     </div>
@@ -59,7 +62,7 @@
                                          ng-change="onSliderSensitivityChanged()"/>
         </div>
 
-        <div class="pager-wrapper">
+        <div class="pager-wrapper" ng-show="maxIndexPage">
             <div class="arrow-left" ng-click="onNewIndexClicked(false)">Previous</div>
             <div class="pager-info">
                 <span class="info-big">Page {{currentIndexPage}}</span>

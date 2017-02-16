@@ -4,14 +4,14 @@
 angular.module('myApp.services', [])
     .factory('serviceFactory', ['$q', '$http', function ($q, $http) {
         var serviceFactory = {};
-        var pageSize = 1000;
-        serviceFactory.getData = function (protectedVraFilePath, recoveryVraFilePath, index) {
-            index = index || 1;
+
+        serviceFactory.getData = function (protectedVraFilePath, recoveryVraFilePath, pageSize, pageIndex) {
+            pageIndex = pageIndex || 1;
             var url =
                 'http://localhost:57904/api/pma?protectedVraFilePath=' + protectedVraFilePath +
                 '&recoveryVraFilePath=' + recoveryVraFilePath +
                 '&pageSize=' + pageSize +
-                '&pageNumber=' + index;
+                '&pageNumber=' + pageIndex;
 
             return $http({
                 method: 'GET',

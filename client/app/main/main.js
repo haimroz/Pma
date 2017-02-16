@@ -5,6 +5,7 @@
 
 const _timeFrame = 100;
 const _viewName = "viewName";
+const _pageSize = 100;
 
 angular.module('myApp.main', ['ngRoute'])
     .config(['$routeProvider', function ($routeProvider) {
@@ -18,8 +19,9 @@ angular.module('myApp.main', ['ngRoute'])
         //Slider
         $scope.isPlayed = false;
         $scope.value = 0;
+        $scope.showLoader = false;
         $scope.currentIndexPage = 1;
-        $scope.maxIndexPage = 150;
+        $scope.maxIndexPage = 0;
         $scope.protectedVraFilePath = undefined;
         $scope.recoveryVraFilePath = undefined;
         $scope.sliderSensitivity = 5;
@@ -64,34 +66,46 @@ angular.module('myApp.main', ['ngRoute'])
                 StartTimer();
             }
         };
-
         $scope.onClickParseLogs = function () {
-            if ($scope.protectedVraFilePath && $scope.recoveryVraFilePath) {
-                serviceFactory.getData($scope.protectedVraFilePath, $scope.recoveryVraFilePath, $scope.currentIndexPage)
-                    .then(onGetDataSuccess);
-            }
+            getDataFromServer($scope.protectedVraFilePath, $scope.recoveryVraFilePath, $scope.currentIndexPage);
         };
         $scope.onNewIndexClicked = function (isNext) {
-            if(isNext){
-                $scope.currentIndexPage ++;
-            } else{
-                if($scope.currentIndexPage > 1){
-                    $scope.currentIndexPage --;
+            if (isNext) {
+                if ($scope.currentIndexPage < $scope.maxIndexPage) {
+                    $scope.currentIndexPage++;
+                } else {
+                    return;
+                }
+
+            } else {
+                if ($scope.currentIndexPage > 1) {
+                    $scope.currentIndexPage--;
+                } else {
+                    return;
                 }
             }
+            getDataFromServer($scope.protectedVraFilePath, $scope.recoveryVraFilePath, $scope.currentIndexPage).then(StopTimer);
         };
 
         //Private
         function onGetDataSuccess(data) {
+            $scope.showLoader = false;
             if (!data)return;
-            $scope.data = processData(data) || [];
-            $scope.thresholds = processThresholds(data) || [];
-            $scope.options.to = data.length - 1;
+            $scope.maxIndexPage = Math.ceil(data.Count / _pageSize);
+            $scope.data = processData(data.PmaData) || [];
+            $scope.thresholds = processThresholds(data.PmaData) || [];
+            $scope.options.to = data.PmaData.length - 1;
             $scope.options.from = 0;
             $scope.value = $scope.invalidTimeSlot ? $scope.invalidTimeSlot_index : 0;
 
             //Remove the String in the head
             renderChart($scope.data[$scope.value], $scope.thresholds[$scope.value]);
+        }
+
+        function getDataFromServer(protectedVraFilePath, recoveryVraFilePath, currentIndexPage) {
+            $scope.showLoader = true;
+            return serviceFactory.getData(protectedVraFilePath, recoveryVraFilePath, _pageSize, currentIndexPage)
+                .then(onGetDataSuccess);
         }
 
         function processThresholds(data) {
@@ -276,6 +290,7 @@ angular.module('myApp.main', ['ngRoute'])
             $scope.Timer = $interval(function () {
                 if ($scope.value >= $scope.options.to) {
                     StopTimer();
+                    $scope.isPlayed = !$scope.isPlayed;
                     return;
                 } else {
                     $scope.value++;
@@ -295,7 +310,4 @@ angular.module('myApp.main', ['ngRoute'])
                 $scope.Timer = null;
             }
         }
-
-        serviceFactory.getData($scope.protectedVraFilePath, $scope.recoveryVraFilePath)
-            .then(onGetDataSuccess);
     }]);
