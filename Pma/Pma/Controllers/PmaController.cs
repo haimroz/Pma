@@ -69,13 +69,13 @@ namespace Ppa.Controllers
             {
                 throw new Exception($"Recovery VRA file path doesn't exist: {recoveryVraFilePath}");
             }
-            if (pageSize < 1 || pageSize > 3000)
+            if (pageSize < 1 || pageSize > 36000)
             {
-                throw new Exception($"PageSize value must be between 1 to 3000. requested page size: {pageSize}");
+                throw new Exception($"PageSize value must be between 1 to 36000. requested page size: {pageSize}");
             }
             if (pageNumber < 1)
             {
-                throw new Exception($"pageNumber value must be between 1 to 3000. requested pageNumber: {pageNumber}");
+                throw new Exception($"pageNumber value must be between 1 to 36000. requested pageNumber: {pageNumber}");
             }
         }
 

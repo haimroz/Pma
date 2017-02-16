@@ -5,7 +5,7 @@
 
 const _timeFrame = 100;
 const _viewName = "viewName";
-const _pageSize = 100;
+const _pageSize = 1800;
 
 angular.module('myApp.main', ['ngRoute'])
     .config(['$routeProvider', function ($routeProvider) {
@@ -192,7 +192,7 @@ angular.module('myApp.main', ['ngRoute'])
                     type: 'bar',
                     selection: {
                         draggable: true
-                    }
+                    },onclick:function(e){alert(e);}
                 },
                 bar: {
                     width: {ratio: 0.6}
