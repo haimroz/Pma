@@ -49,7 +49,6 @@
         </div>
     </div>
 
-
     <div class="actions__container">
         <div class="result-invalid" ng-show="showGotoKB()" ng-click="goToKB()">
             Go to Knowledge Base ...
@@ -61,22 +60,22 @@
         </div>
 
         <div class="pager-wrapper">
-            <div class="arrow-left">Previous</div>
+            <div class="arrow-left" ng-click="onNewIndexClicked(false)">Previous</div>
             <div class="pager-info">
-                <span class="info-big">Page {{1}}</span>
-                <span class="info-small">of {{55}}</span>
+                <span class="info-big">Page {{currentIndexPage}}</span>
+                <span class="info-small">of {{maxIndexPage}}</span>
             </div>
-            <div class="arrow-right">Next</div>
+            <div class="arrow-right" ng-click="onNewIndexClicked(true)">Next</div>
         </div>
     </div>
 
     <div class="files__container">
         <div class="file-picker">
-            Protected Vra File:<input type="file" accept="*/*" input-file-upload-handler="onSelectedFile($event,'protectedVraFilePath')"/>
+            Protected Vra File:<input type="text" ng-model="protectedVraFilePath"/>
         </div>
 
         <div class="file-picker">
-            Recovery Vra File:<input type="file" accept="*/*" input-file-upload-handler="onSelectedFile($event,'recoveryVraFilePath')"/>
+            Recovery Vra File:<input type="text" ng-model="recoveryVraFilePath"/>
         </div>
 
         <div class="button-parse" ng-click="onClickParseLogs()">
