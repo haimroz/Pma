@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using PmaEntities;
 
@@ -30,38 +31,47 @@ namespace ParseLogs
                 return interpolatedList;
             }
             Dictionary<int, List<KnownDataPoint>> mesaurmentsKnownDataPoints = BuildKnownPointsLists(rawList);
-            Dictionary<int, KnownDataPoint> knownDataPoints =
-                new Dictionary<int, KnownDataPoint>(mesaurmentsKnownDataPoints.Count);
-            Dictionary<int, List<KnownDataPoint>.Enumerator> nextDataPoints = new Dictionary<int, List<KnownDataPoint>.Enumerator>();
+            Dictionary<int, int> currentKnownDataPointsInd = new Dictionary<int, int>();
             for (int mesaurmentInd = 0; mesaurmentInd < mesaurmentsKnownDataPoints.Count; mesaurmentInd++)
             {
-                knownDataPoints[mesaurmentInd] = mesaurmentsKnownDataPoints[mesaurmentInd].First();
-                nextDataPoints[mesaurmentInd] = mesaurmentsKnownDataPoints[mesaurmentInd].GetEnumerator();
-                nextDataPoints[mesaurmentInd].MoveNext();
+                currentKnownDataPointsInd[mesaurmentInd] = 0;
             }
 
+            PmaRawEntity pmaEntity = null;
             foreach (var rawEntity in rawList)
             {
                 if (interpolatedList.Count > 0 && HasTimeGap(interpolatedList.Last(), rawEntity))
                 {
-                    FillTimeGaps(interpolatedList.Last().TimeStamp, rawEntity.TimeStamp, knownDataPoints, interpolatedList);
+                    FillTimeGaps(interpolatedList.Last().TimeStamp, rawEntity.TimeStamp.AddSeconds(-1), mesaurmentsKnownDataPoints,
+                        currentKnownDataPointsInd, interpolatedList);
                 }
-                PmaRawEntity pmaEntity = new PmaRawEntity();
-                pmaEntity.TimeStamp = rawEntity.TimeStamp;
+                if (interpolatedList.Count == 0 || interpolatedList.Last().TimeStamp != rawEntity.TimeStamp)
+                {
+                    pmaEntity = new PmaRawEntity();
+                    interpolatedList.Add(pmaEntity);
+                    pmaEntity.TimeStamp = rawEntity.TimeStamp;
+                }
                 for (int mesaurmentInd = 0; mesaurmentInd < PmaRawEntity.NumOfMesaurments; mesaurmentInd++)
                 {
-                    SetPmaMesaurment(rawEntity, pmaEntity, mesaurmentInd, knownDataPoints[mesaurmentInd],
-                        nextDataPoints[mesaurmentInd]);
+                    SetPmaMesaurment(rawEntity, pmaEntity, mesaurmentInd, mesaurmentsKnownDataPoints[mesaurmentInd],
+                        currentKnownDataPointsInd);
                 }
-                interpolatedList.Add(pmaEntity);
             }
             return interpolatedList;
         }
 
         private void SetPmaMesaurment(PmaRawEntity rawEntity, PmaRawEntity pmaEntity, int mesaurmentInd,
-            KnownDataPoint currerntDataPoint,
-            List<KnownDataPoint>.Enumerator nextDataPointEnumerator)
+            List<KnownDataPoint> knownDataPoints, Dictionary<int, int> currentDataPointsInd) //List<KnownDataPoint>.Enumerator nextDataPointEnumerator)
         {
+            KnownDataPoint nextDataPoint = currentDataPointsInd[mesaurmentInd] + 1 < knownDataPoints.Count
+                ? knownDataPoints[currentDataPointsInd[mesaurmentInd] + 1]
+                : null;
+
+            if (nextDataPoint != null && nextDataPoint.TimeStamp <= rawEntity.TimeStamp)
+            {
+                currentDataPointsInd[mesaurmentInd]++;
+            }
+
             double rawMesaurment = rawEntity.GetMesaurment(mesaurmentInd);
             if (rawMesaurment >= 0)
             {
@@ -69,15 +79,7 @@ namespace ParseLogs
             }
             else
             {
-                KnownDataPoint nextDataPoint = nextDataPointEnumerator.Current;
-
-                if (nextDataPoint != null && nextDataPoint.TimeStamp <= rawEntity.TimeStamp)
-                {
-                    currerntDataPoint = nextDataPoint;
-                    nextDataPointEnumerator.MoveNext();
-                }
-
-                SetInterpolatedValue(pmaEntity, mesaurmentInd, currerntDataPoint);
+                SetInterpolatedValue(pmaEntity, mesaurmentInd, knownDataPoints[currentDataPointsInd[mesaurmentInd]]);
             }
         }
 
@@ -96,6 +98,15 @@ namespace ParseLogs
                     double mesaurmentVal = rawEntity.GetMesaurment(mesaurmentInd);
                     if (mesaurmentVal >= 0)
                     {
+                        if (mesaurmentsKnownDataPoints[mesaurmentInd].Any())
+                        {
+                            Debug.Assert(
+                                !mesaurmentsKnownDataPoints[mesaurmentInd].LastOrDefault()
+                                    .TimeStamp.Equals(rawEntity.TimeStamp),
+                                string.Format(
+                                    "Found a duplicate value during interpolations. mesaurmentInd = {0}. Timestamp = {1}",
+                                    mesaurmentInd, rawEntity.TimeStamp));
+                        }
                         AddKnownPoint(mesaurmentsKnownDataPoints[mesaurmentInd], rawEntity.TimeStamp, mesaurmentVal);
                     }
                 }
@@ -133,18 +144,18 @@ namespace ParseLogs
             }
             return false;
         }
-        private void FillTimeGaps(DateTime firstTime, DateTime lastTime, Dictionary<int, KnownDataPoint> knownDataPoints, List<PmaRawEntity> interpolatedList)
+        private void FillTimeGaps(DateTime firstTime, DateTime lastTime, Dictionary<int, List<KnownDataPoint>> knownDataPoints, Dictionary<int, int> currentKnownDataPointsInd, List<PmaRawEntity> interpolatedList)
         {
-            DateTime currentTime = firstTime;
+            DateTime currentTime = firstTime.AddSeconds(1);
             while (currentTime <= lastTime)
             {
                 PmaRawEntity interpolatedEntity = new PmaRawEntity();
                 interpolatedEntity.TimeStamp = currentTime;
                 for (int mesaurmentInd = 0; mesaurmentInd < PmaRawEntity.NumOfMesaurments; mesaurmentInd++)
                 {
-                    KnownDataPoint knownData = knownDataPoints[mesaurmentInd];
+                    KnownDataPoint knownData = knownDataPoints[mesaurmentInd][currentKnownDataPointsInd[mesaurmentInd]];
                     interpolatedEntity.SetMesaurment(mesaurmentInd,
-                        knownData.Value + interpolatedList.Last().GetMesaurment(mesaurmentInd) +
+                        interpolatedList.Last().GetMesaurment(mesaurmentInd) +
                         knownData.NextPointIncrement);
                 }
                 interpolatedList.Add(interpolatedEntity);
@@ -157,104 +168,6 @@ namespace ParseLogs
             double timeDifference = pmaEntity.TimeStamp.TimeOfDay.TotalSeconds -
                                  knownDataPoint.TimeStamp.TimeOfDay.TotalSeconds;
             pmaEntity.SetMesaurment(mesaurmentInd, knownDataPoint.Value + knownDataPoint.NextPointIncrement * timeDifference);
-        }
-
-        public List<PmaRawEntity> ProcessRawList(List<PmaRawEntity> rawList)
-        {
-            List<PmaRawEntity> newList = new List<PmaRawEntity>();
-            if (rawList.Count <= 1)
-                return null;
-            DateTime start = rawList.First().TimeStamp;
-            DateTime finish = rawList.Last().TimeStamp;
-
-            DateTime current = start;
-
-            PmaRawEntity newItem = new PmaRawEntity(rawList.First());
-
-
-            if (newItem.ProtectedIOsInDriverMBs == -1)
-                newItem.ProtectedIOsInDriverMBs = 0;
-            if (newItem.ProtectedVolumeWriteRateMBs == -1)
-                newItem.ProtectedVolumeWriteRateMBs = 0;
-            if (newItem.ProtectedVolumeCompressedWriteRateMBs == -1)
-                newItem.ProtectedVolumeCompressedWriteRateMBs = 0;
-            if (newItem.ProtectedCpuPerc == -1)
-                newItem.ProtectedCpuPerc = 0;
-            if (newItem.ProtectedVraBufferUsagePerc == -1)
-                newItem.ProtectedVraBufferUsagePerc = 0;
-            if (newItem.ProtectedTcpBufferUsagePerc == -1)
-                newItem.ProtectedTcpBufferUsagePerc = 0;
-            if (newItem.NetworkOutgoingRateMBs == -1)
-                newItem.NetworkOutgoingRateMBs = 0;
-            if (newItem.RecoveryTcpBufferUsagePerc == -1)
-                newItem.RecoveryTcpBufferUsagePerc = 0;
-            if (newItem.RecoveryCpuPerc == -1)
-                newItem.RecoveryCpuPerc = 0;
-            if (newItem.RecoveryVraBufferUsagePerc == -1)
-                newItem.RecoveryVraBufferUsagePerc = 0;
-            if (newItem.HardeningRateMBs == -1)
-                newItem.HardeningRateMBs = 0;
-            else//fixing logparser/zvm bug that treats the LBs as Bytes
-                newItem.HardeningRateMBs *= 512;
-
-            if (newItem.ApplyRateMBs == -1)
-                newItem.ApplyRateMBs = 0;
-
-            newList.Add(newItem);
-
-            int indexInRaw = 1;
-            int numSkips = 0;
-
-            for (current = current.AddSeconds(1); current <= finish; current = current.AddSeconds(1))
-            {
-                PmaRawEntity entity = new PmaRawEntity(newList.Last());
-                entity.TimeStamp = current;
-                //IEnumerable<PmaRawEntity> matches = rawList.Where(obj => obj.TimeStamp == current);
-                //if (matches.Count() > 0)
-                if (rawList[indexInRaw].TimeStamp < current)
-                {
-                    throw new Exception("My incremental time stamp passed the timestamp in the file line num" + indexInRaw);
-                }
-                if (rawList[indexInRaw].TimeStamp == current)
-                {
-                    //PmaRawEntity match = matches.First();
-                    PmaRawEntity match = rawList[indexInRaw];
-                    if (match.ProtectedIOsInDriverMBs != -1)
-                        entity.ProtectedIOsInDriverMBs = match.ProtectedIOsInDriverMBs;
-                    if (match.ProtectedVolumeWriteRateMBs != -1)
-                        entity.ProtectedVolumeWriteRateMBs = match.ProtectedVolumeWriteRateMBs;
-                    if (match.ProtectedVolumeCompressedWriteRateMBs != -1)
-                        entity.ProtectedVolumeCompressedWriteRateMBs = match.ProtectedVolumeCompressedWriteRateMBs;
-                    if (match.ProtectedCpuPerc != -1)
-                        entity.ProtectedCpuPerc = match.ProtectedCpuPerc;
-                    if (match.ProtectedVraBufferUsagePerc != -1)
-                        entity.ProtectedVraBufferUsagePerc = match.ProtectedVraBufferUsagePerc;
-                    if (match.ProtectedTcpBufferUsagePerc != -1)
-                        entity.ProtectedTcpBufferUsagePerc = match.ProtectedTcpBufferUsagePerc;
-                    if (match.NetworkOutgoingRateMBs != -1)
-                        entity.NetworkOutgoingRateMBs = match.NetworkOutgoingRateMBs;
-                    if (match.RecoveryTcpBufferUsagePerc != -1)
-                        entity.RecoveryTcpBufferUsagePerc = match.RecoveryTcpBufferUsagePerc;
-                    if (match.RecoveryCpuPerc != -1)
-                        entity.RecoveryCpuPerc = match.RecoveryCpuPerc;
-                    if (match.RecoveryVraBufferUsagePerc != -1)
-                        entity.RecoveryVraBufferUsagePerc = match.RecoveryVraBufferUsagePerc;
-                    if (match.HardeningRateMBs != -1)
-                        entity.HardeningRateMBs = match.HardeningRateMBs * 512; //fixing logparser/zvm bug that treats the LBs as Bytes
-                    if (match.ApplyRateMBs != -1)
-                        entity.ApplyRateMBs = match.ApplyRateMBs;
-                    indexInRaw++;
-
-                    while ((indexInRaw < rawList.Count) && rawList[indexInRaw].TimeStamp == current)
-                    {
-                        //TODO research what are these skips. It means two entries with the same time stamp.
-                        numSkips++;
-                        indexInRaw++;
-                    }
-                }
-                newList.Add(entity);
-            }
-            return newList;
         }
 
         public List<PmaRawEntity> MergeLists(List<PmaRawEntity> protectedPmaRawEntities,
