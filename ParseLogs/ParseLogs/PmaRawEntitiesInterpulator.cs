@@ -12,27 +12,34 @@ namespace ParseLogs
         {
             public DateTime TimeStamp { get; }
             public double Value { get; }
-            public double? NextPointIncrement { get; set; }
+            public double NextPointIncrement { get; set; }
 
-            public KnownDataPoint(DateTime timeStamp, double value)
+            public KnownDataPoint(DateTime timeStamp, double value, double nextPointIncrement = 0)
             {
                 TimeStamp = timeStamp;
                 Value = value;
-                NextPointIncrement = null;
+                NextPointIncrement = nextPointIncrement;
             }
         }
 
         public List<PmaRawEntity> BuildInterpolatedList(List<PmaRawEntity> rawList)
         {
+            List<PmaRawEntity> interpolatedList = new List<PmaRawEntity>();
+            if (!rawList.Any())
+            {
+                return interpolatedList;
+            }
             Dictionary<int, List<KnownDataPoint>> mesaurmentsKnownDataPoints = BuildKnownPointsLists(rawList);
             Dictionary<int, KnownDataPoint> knownDataPoints =
                 new Dictionary<int, KnownDataPoint>(mesaurmentsKnownDataPoints.Count);
+            Dictionary<int, List<KnownDataPoint>.Enumerator> nextDataPoints = new Dictionary<int, List<KnownDataPoint>.Enumerator>();
             for (int mesaurmentInd = 0; mesaurmentInd < mesaurmentsKnownDataPoints.Count; mesaurmentInd++)
             {
                 knownDataPoints[mesaurmentInd] = mesaurmentsKnownDataPoints[mesaurmentInd].First();
+                nextDataPoints[mesaurmentInd] = mesaurmentsKnownDataPoints[mesaurmentInd].GetEnumerator();
+                nextDataPoints[mesaurmentInd].MoveNext();
             }
 
-            List<PmaRawEntity> interpolatedList = new List<PmaRawEntity>();
             foreach (var rawEntity in rawList)
             {
                 if (interpolatedList.Count > 0 && HasTimeGap(interpolatedList.Last(), rawEntity))
@@ -40,23 +47,38 @@ namespace ParseLogs
                     FillTimeGaps(interpolatedList.Last().TimeStamp, rawEntity.TimeStamp, knownDataPoints, interpolatedList);
                 }
                 PmaRawEntity pmaEntity = new PmaRawEntity();
+                pmaEntity.TimeStamp = rawEntity.TimeStamp;
                 for (int mesaurmentInd = 0; mesaurmentInd < PmaRawEntity.NumOfMesaurments; mesaurmentInd++)
                 {
-                    double rawMesaurment = rawEntity.GetMesaurment(mesaurmentInd);
-                    if (rawMesaurment >= 0)
-                    {
-                        pmaEntity.SetMesaurment(mesaurmentInd, rawMesaurment);
-                    }
-                    else
-                    {
-                        pmaEntity.SetMesaurment(mesaurmentInd,
-                            interpolatedList.Last().GetMesaurment(mesaurmentInd) +
-                            knownDataPoints[mesaurmentInd].NextPointIncrement.Value);
-                    }
+                    SetPmaMesaurment(rawEntity, pmaEntity, mesaurmentInd, knownDataPoints[mesaurmentInd],
+                        nextDataPoints[mesaurmentInd]);
                 }
                 interpolatedList.Add(pmaEntity);
             }
             return interpolatedList;
+        }
+
+        private void SetPmaMesaurment(PmaRawEntity rawEntity, PmaRawEntity pmaEntity, int mesaurmentInd,
+            KnownDataPoint currerntDataPoint,
+            List<KnownDataPoint>.Enumerator nextDataPointEnumerator)
+        {
+            double rawMesaurment = rawEntity.GetMesaurment(mesaurmentInd);
+            if (rawMesaurment >= 0)
+            {
+                pmaEntity.SetMesaurment(mesaurmentInd, rawMesaurment);
+            }
+            else
+            {
+                KnownDataPoint nextDataPoint = nextDataPointEnumerator.Current;
+
+                if (nextDataPoint != null && nextDataPoint.TimeStamp <= rawEntity.TimeStamp)
+                {
+                    currerntDataPoint = nextDataPoint;
+                    nextDataPointEnumerator.MoveNext();
+                }
+
+                SetInterpolatedValue(pmaEntity, mesaurmentInd, currerntDataPoint);
+            }
         }
 
         private Dictionary<int, List<KnownDataPoint>> BuildKnownPointsLists(List<PmaRawEntity> rawList)
@@ -78,6 +100,15 @@ namespace ParseLogs
                     }
                 }
             }
+            foreach (var knownDataPoints in mesaurmentsKnownDataPoints)
+            {
+                if (!knownDataPoints.Value.Any())
+                {
+                    KnownDataPoint defaultDataPoint = new KnownDataPoint(rawList[knownDataPoints.Key].TimeStamp, 0);
+                    knownDataPoints.Value.Add(defaultDataPoint);
+                }
+            }
+
             return mesaurmentsKnownDataPoints;
         }
 
@@ -87,8 +118,10 @@ namespace ParseLogs
             if (knownDataPoints.Count > 1)
             {
                 KnownDataPoint previousPoint = knownDataPoints[knownDataPoints.Count - 2];
-                previousPoint.NextPointIncrement = (value - previousPoint.Value)/
+                double incrementBy = (value - previousPoint.Value) /
                                                    (timeStamp.Subtract(previousPoint.TimeStamp).TotalSeconds);
+                previousPoint.NextPointIncrement = incrementBy;
+                knownDataPoints.Last().NextPointIncrement = incrementBy;
             }
         }
 
@@ -112,11 +145,18 @@ namespace ParseLogs
                     KnownDataPoint knownData = knownDataPoints[mesaurmentInd];
                     interpolatedEntity.SetMesaurment(mesaurmentInd,
                         knownData.Value + interpolatedList.Last().GetMesaurment(mesaurmentInd) +
-                        knownData.NextPointIncrement.Value);
+                        knownData.NextPointIncrement);
                 }
                 interpolatedList.Add(interpolatedEntity);
                 currentTime = currentTime.AddSeconds(1);
             }
+        }
+
+        private void SetInterpolatedValue(PmaRawEntity pmaEntity, int mesaurmentInd, KnownDataPoint knownDataPoint)
+        {
+            double timeDifference = pmaEntity.TimeStamp.TimeOfDay.TotalSeconds -
+                                 knownDataPoint.TimeStamp.TimeOfDay.TotalSeconds;
+            pmaEntity.SetMesaurment(mesaurmentInd, knownDataPoint.Value + knownDataPoint.NextPointIncrement * timeDifference);
         }
 
         public List<PmaRawEntity> ProcessRawList(List<PmaRawEntity> rawList)
