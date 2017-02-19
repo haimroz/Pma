@@ -21,8 +21,8 @@ namespace ParseLogs.OldCode
             List<PmaRawEntity> protectedRawList = logParser.Parse(protectedLogFileName);
             List<PmaRawEntity> recoveryRawList = logParser.Parse(recoveryLogFileName);
             PmaRawEntitiesInterpulator interpolator = new PmaRawEntitiesInterpulator();
-            List<PmaRawEntity> protectedPmaRawEntities = interpolator.ProcessRawList(protectedRawList);
-            List<PmaRawEntity> recoveryPmaRawEntities = interpolator.ProcessRawList(recoveryRawList);
+            List<PmaRawEntity> protectedPmaRawEntities = interpolator.BuildInterpolatedList(protectedRawList);
+            List<PmaRawEntity> recoveryPmaRawEntities = interpolator.BuildInterpolatedList(recoveryRawList);
 
             List<PmaRawEntity> mergedPmaRawEntities = interpolator.MergeLists(protectedPmaRawEntities,
                 recoveryPmaRawEntities);

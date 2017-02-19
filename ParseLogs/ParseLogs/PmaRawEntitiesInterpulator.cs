@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using PmaEntities;
 
@@ -7,102 +9,165 @@ namespace ParseLogs
 {
     public class PmaRawEntitiesInterpulator
     {
-        public List<PmaRawEntity> ProcessRawList(List<PmaRawEntity> rawList)
+        private class KnownDataPoint
         {
-            List<PmaRawEntity> newList = new List<PmaRawEntity>();
-            if (rawList.Count <= 1)
-                return null;
-            DateTime start = rawList.First().TimeStamp;
-            DateTime finish = rawList.Last().TimeStamp;
+            public DateTime TimeStamp { get; }
+            public double Value { get; }
+            public double NextPointIncrement { get; set; }
 
-            DateTime current = start;
-
-            PmaRawEntity newItem = new PmaRawEntity(rawList.First());
-
-
-            if (newItem.ProtectedIOsInDriverMBs == -1)
-                newItem.ProtectedIOsInDriverMBs = 0;
-            if (newItem.ProtectedVolumeWriteRateMBs == -1)
-                newItem.ProtectedVolumeWriteRateMBs = 0;
-            if (newItem.ProtectedVolumeCompressedWriteRateMBs == -1)
-                newItem.ProtectedVolumeCompressedWriteRateMBs = 0;
-            if (newItem.ProtectedCpuPerc == -1)
-                newItem.ProtectedCpuPerc = 0;
-            if (newItem.ProtectedVraBufferUsagePerc == -1)
-                newItem.ProtectedVraBufferUsagePerc = 0;
-            if (newItem.ProtectedTcpBufferUsagePerc == -1)
-                newItem.ProtectedTcpBufferUsagePerc = 0;
-            if (newItem.NetworkOutgoingRateMBs == -1)
-                newItem.NetworkOutgoingRateMBs = 0;
-            if (newItem.RecoveryTcpBufferUsagePerc == -1)
-                newItem.RecoveryTcpBufferUsagePerc = 0;
-            if (newItem.RecoveryCpuPerc == -1)
-                newItem.RecoveryCpuPerc = 0;
-            if (newItem.RecoveryVraBufferUsagePerc == -1)
-                newItem.RecoveryVraBufferUsagePerc = 0;
-            if (newItem.HardeningRateMBs == -1)
-                newItem.HardeningRateMBs = 0;
-            else//fixing logparser/zvm bug that treats the LBs as Bytes
-                newItem.HardeningRateMBs *= 512;
-
-            if (newItem.ApplyRateMBs == -1)
-                newItem.ApplyRateMBs = 0;
-
-            newList.Add(newItem);
-
-            int indexInRaw = 1;
-            int numSkips = 0;
-
-            for (current = current.AddSeconds(1); current <= finish; current = current.AddSeconds(1))
+            public KnownDataPoint(DateTime timeStamp, double value, double nextPointIncrement = 0)
             {
-                PmaRawEntity entity = new PmaRawEntity(newList.Last());
-                entity.TimeStamp = current;
-                //IEnumerable<PmaRawEntity> matches = rawList.Where(obj => obj.TimeStamp == current);
-                //if (matches.Count() > 0)
-                if (rawList[indexInRaw].TimeStamp < current)
-                {
-                    throw new Exception("My incremental time stamp passed the timestamp in the file line num" + indexInRaw);
-                }
-                if (rawList[indexInRaw].TimeStamp == current)
-                {
-                    //PmaRawEntity match = matches.First();
-                    PmaRawEntity match = rawList[indexInRaw];
-                    if (match.ProtectedIOsInDriverMBs != -1)
-                        entity.ProtectedIOsInDriverMBs = match.ProtectedIOsInDriverMBs;
-                    if (match.ProtectedVolumeWriteRateMBs != -1)
-                        entity.ProtectedVolumeWriteRateMBs = match.ProtectedVolumeWriteRateMBs;
-                    if (match.ProtectedVolumeCompressedWriteRateMBs != -1)
-                        entity.ProtectedVolumeCompressedWriteRateMBs = match.ProtectedVolumeCompressedWriteRateMBs;
-                    if (match.ProtectedCpuPerc != -1)
-                        entity.ProtectedCpuPerc = match.ProtectedCpuPerc;
-                    if (match.ProtectedVraBufferUsagePerc != -1)
-                        entity.ProtectedVraBufferUsagePerc = match.ProtectedVraBufferUsagePerc;
-                    if (match.ProtectedTcpBufferUsagePerc != -1)
-                        entity.ProtectedTcpBufferUsagePerc = match.ProtectedTcpBufferUsagePerc;
-                    if (match.NetworkOutgoingRateMBs != -1)
-                        entity.NetworkOutgoingRateMBs = match.NetworkOutgoingRateMBs;
-                    if (match.RecoveryTcpBufferUsagePerc != -1)
-                        entity.RecoveryTcpBufferUsagePerc = match.RecoveryTcpBufferUsagePerc;
-                    if (match.RecoveryCpuPerc != -1)
-                        entity.RecoveryCpuPerc = match.RecoveryCpuPerc;
-                    if (match.RecoveryVraBufferUsagePerc != -1)
-                        entity.RecoveryVraBufferUsagePerc = match.RecoveryVraBufferUsagePerc;
-                    if (match.HardeningRateMBs != -1)
-                        entity.HardeningRateMBs = match.HardeningRateMBs * 512; //fixing logparser/zvm bug that treats the LBs as Bytes
-                    if (match.ApplyRateMBs != -1)
-                        entity.ApplyRateMBs = match.ApplyRateMBs;
-                    indexInRaw++;
+                TimeStamp = timeStamp;
+                Value = value;
+                NextPointIncrement = nextPointIncrement;
+            }
+        }
 
-                    while ((indexInRaw < rawList.Count) && rawList[indexInRaw].TimeStamp == current)
+        public List<PmaRawEntity> BuildInterpolatedList(List<PmaRawEntity> rawList)
+        {
+            List<PmaRawEntity> interpolatedList = new List<PmaRawEntity>();
+            if (!rawList.Any())
+            {
+                return interpolatedList;
+            }
+            Dictionary<int, List<KnownDataPoint>> mesaurmentsKnownDataPoints = BuildKnownPointsLists(rawList);
+            Dictionary<int, int> currentKnownDataPointsInd = new Dictionary<int, int>();
+            for (int mesaurmentInd = 0; mesaurmentInd < mesaurmentsKnownDataPoints.Count; mesaurmentInd++)
+            {
+                currentKnownDataPointsInd[mesaurmentInd] = 0;
+            }
+
+            PmaRawEntity pmaEntity = null;
+            foreach (var rawEntity in rawList)
+            {
+                if (interpolatedList.Count > 0 && HasTimeGap(interpolatedList.Last(), rawEntity))
+                {
+                    FillTimeGaps(interpolatedList.Last().TimeStamp, rawEntity.TimeStamp.AddSeconds(-1), mesaurmentsKnownDataPoints,
+                        currentKnownDataPointsInd, interpolatedList);
+                }
+                if (interpolatedList.Count == 0 || interpolatedList.Last().TimeStamp != rawEntity.TimeStamp)
+                {
+                    pmaEntity = new PmaRawEntity();
+                    interpolatedList.Add(pmaEntity);
+                    pmaEntity.TimeStamp = rawEntity.TimeStamp;
+                }
+                for (int mesaurmentInd = 0; mesaurmentInd < PmaRawEntity.NumOfMesaurments; mesaurmentInd++)
+                {
+                    SetPmaMesaurment(rawEntity, pmaEntity, mesaurmentInd, mesaurmentsKnownDataPoints[mesaurmentInd],
+                        currentKnownDataPointsInd);
+                }
+            }
+            return interpolatedList;
+        }
+
+        private void SetPmaMesaurment(PmaRawEntity rawEntity, PmaRawEntity pmaEntity, int mesaurmentInd,
+            List<KnownDataPoint> knownDataPoints, Dictionary<int, int> currentDataPointsInd) //List<KnownDataPoint>.Enumerator nextDataPointEnumerator)
+        {
+            KnownDataPoint nextDataPoint = currentDataPointsInd[mesaurmentInd] + 1 < knownDataPoints.Count
+                ? knownDataPoints[currentDataPointsInd[mesaurmentInd] + 1]
+                : null;
+
+            if (nextDataPoint != null && nextDataPoint.TimeStamp <= rawEntity.TimeStamp)
+            {
+                currentDataPointsInd[mesaurmentInd]++;
+            }
+
+            double rawMesaurment = rawEntity.GetMesaurment(mesaurmentInd);
+            if (rawMesaurment >= 0)
+            {
+                pmaEntity.SetMesaurment(mesaurmentInd, rawMesaurment);
+            }
+            else
+            {
+                SetInterpolatedValue(pmaEntity, mesaurmentInd, knownDataPoints[currentDataPointsInd[mesaurmentInd]]);
+            }
+        }
+
+        private Dictionary<int, List<KnownDataPoint>> BuildKnownPointsLists(List<PmaRawEntity> rawList)
+        {
+            Dictionary<int, List<KnownDataPoint>> mesaurmentsKnownDataPoints =
+                new Dictionary<int, List<KnownDataPoint>>(PmaRawEntity.NumOfMesaurments);
+            for (int mesaurmentInd = 0; mesaurmentInd < PmaRawEntity.NumOfMesaurments; mesaurmentInd++)
+            {
+                mesaurmentsKnownDataPoints.Add(mesaurmentInd, new List<KnownDataPoint>());
+            }
+            foreach (var rawEntity in rawList)
+            {
+                for (int mesaurmentInd = 0; mesaurmentInd < PmaRawEntity.NumOfMesaurments; mesaurmentInd++)
+                {
+                    double mesaurmentVal = rawEntity.GetMesaurment(mesaurmentInd);
+                    if (mesaurmentVal >= 0)
                     {
-                        //TODO research what are these skips. It means two entries with the same time stamp.
-                        numSkips++;
-                        indexInRaw++;
+                        if (mesaurmentsKnownDataPoints[mesaurmentInd].Any())
+                        {
+                            Debug.Assert(
+                                !mesaurmentsKnownDataPoints[mesaurmentInd].LastOrDefault()
+                                    .TimeStamp.Equals(rawEntity.TimeStamp),
+                                string.Format(
+                                    "Found a duplicate value during interpolations. mesaurmentInd = {0}. Timestamp = {1}",
+                                    mesaurmentInd, rawEntity.TimeStamp));
+                        }
+                        AddKnownPoint(mesaurmentsKnownDataPoints[mesaurmentInd], rawEntity.TimeStamp, mesaurmentVal);
                     }
                 }
-                newList.Add(entity);
             }
-            return newList;
+            foreach (var knownDataPoints in mesaurmentsKnownDataPoints)
+            {
+                if (!knownDataPoints.Value.Any())
+                {
+                    KnownDataPoint defaultDataPoint = new KnownDataPoint(rawList[knownDataPoints.Key].TimeStamp, 0);
+                    knownDataPoints.Value.Add(defaultDataPoint);
+                }
+            }
+
+            return mesaurmentsKnownDataPoints;
+        }
+
+        private void AddKnownPoint(List<KnownDataPoint> knownDataPoints, DateTime timeStamp, double value)
+        {
+            knownDataPoints.Add(new KnownDataPoint(timeStamp, value));
+            if (knownDataPoints.Count > 1)
+            {
+                KnownDataPoint previousPoint = knownDataPoints[knownDataPoints.Count - 2];
+                double incrementBy = (value - previousPoint.Value) /
+                                                   (timeStamp.Subtract(previousPoint.TimeStamp).TotalSeconds);
+                previousPoint.NextPointIncrement = incrementBy;
+                knownDataPoints.Last().NextPointIncrement = incrementBy;
+            }
+        }
+
+        private bool HasTimeGap(PmaRawEntity firstEntity, PmaRawEntity secondEntity)
+        {
+            if (secondEntity.TimeStamp.TimeOfDay.TotalSeconds - firstEntity.TimeStamp.TimeOfDay.TotalSeconds > 1)
+            {
+                return true;
+            }
+            return false;
+        }
+        private void FillTimeGaps(DateTime firstTime, DateTime lastTime, Dictionary<int, List<KnownDataPoint>> knownDataPoints, Dictionary<int, int> currentKnownDataPointsInd, List<PmaRawEntity> interpolatedList)
+        {
+            DateTime currentTime = firstTime.AddSeconds(1);
+            while (currentTime <= lastTime)
+            {
+                PmaRawEntity interpolatedEntity = new PmaRawEntity();
+                interpolatedEntity.TimeStamp = currentTime;
+                for (int mesaurmentInd = 0; mesaurmentInd < PmaRawEntity.NumOfMesaurments; mesaurmentInd++)
+                {
+                    KnownDataPoint knownData = knownDataPoints[mesaurmentInd][currentKnownDataPointsInd[mesaurmentInd]];
+                    interpolatedEntity.SetMesaurment(mesaurmentInd,
+                        interpolatedList.Last().GetMesaurment(mesaurmentInd) +
+                        knownData.NextPointIncrement);
+                }
+                interpolatedList.Add(interpolatedEntity);
+                currentTime = currentTime.AddSeconds(1);
+            }
+        }
+
+        private void SetInterpolatedValue(PmaRawEntity pmaEntity, int mesaurmentInd, KnownDataPoint knownDataPoint)
+        {
+            double timeDifference = pmaEntity.TimeStamp.TimeOfDay.TotalSeconds -
+                                 knownDataPoint.TimeStamp.TimeOfDay.TotalSeconds;
+            pmaEntity.SetMesaurment(mesaurmentInd, knownDataPoint.Value + knownDataPoint.NextPointIncrement * timeDifference);
         }
 
         public List<PmaRawEntity> MergeLists(List<PmaRawEntity> protectedPmaRawEntities,

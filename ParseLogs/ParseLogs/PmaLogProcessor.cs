@@ -25,8 +25,8 @@ namespace ParseLogs
             List<PmaRawEntity> protectedRawList = logParser.Parse(m_bundleInfo.ProtectedVraFilePath);
             List<PmaRawEntity> recoveryRawList = logParser.Parse(m_bundleInfo.RecoveryVraFilePath);
             PmaRawEntitiesInterpulator interpolator = new PmaRawEntitiesInterpulator();
-            List<PmaRawEntity> protectedPmaRawEntities = interpolator.ProcessRawList(protectedRawList);
-            List<PmaRawEntity> recoveryPmaRawEntities = interpolator.ProcessRawList(recoveryRawList);
+            List<PmaRawEntity> protectedPmaRawEntities = interpolator.BuildInterpolatedList(protectedRawList);
+            List<PmaRawEntity> recoveryPmaRawEntities = interpolator.BuildInterpolatedList(recoveryRawList);
             List<PmaRawEntity> mergedPmaRawEntities = interpolator.MergeLists(protectedPmaRawEntities, recoveryPmaRawEntities);
 
             for (int i = 0; i < mergedPmaRawEntities.Count; i++)
@@ -101,8 +101,8 @@ namespace ParseLogs
             List<PmaRawEntity> protectedRawList = logParser.Parse(m_bundleInfo.ProtectedVraFilePath);
             List<PmaRawEntity> recoveryRawList = logParser.Parse(m_bundleInfo.RecoveryVraFilePath);
             PmaRawEntitiesInterpulator interpolator = new PmaRawEntitiesInterpulator();
-            List<PmaRawEntity> protectedPmaRawEntities = interpolator.ProcessRawList(protectedRawList);
-            List<PmaRawEntity> recoveryPmaRawEntities = interpolator.ProcessRawList(recoveryRawList);
+            List<PmaRawEntity> protectedPmaRawEntities = interpolator.BuildInterpolatedList(protectedRawList);
+            List<PmaRawEntity> recoveryPmaRawEntities = interpolator.BuildInterpolatedList(recoveryRawList);
 
             List<PmaRawEntity> mergedPmaRawEntities = interpolator.MergeLists(protectedPmaRawEntities, recoveryPmaRawEntities);
 
@@ -112,7 +112,7 @@ namespace ParseLogs
 
         private void SendDataToFile(List<string> headers, List<PmaRawEntity> pmaEntities)
         {
-            using (var streamWriter = new StreamWriter("C:\\pma\\output.txt"))
+            using (var streamWriter = new StreamWriter("C:\\pma\\output.csv"))
             {
                 streamWriter.WriteLine(string.Join(",", headers.ToArray()));
                 foreach (PmaRawEntity pmaEntity in pmaEntities)
