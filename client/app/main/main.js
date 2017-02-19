@@ -20,10 +20,10 @@ angular.module('myApp.main', ['ngRoute'])
         $scope.isPlayed = false;
         $scope.value = 0;
         $scope.showLoader = false;
-        $scope.currentIndexPage = 0;
+        $scope.currentIndexPage = 1;
         $scope.maxIndexPage = 0;
-        $scope.protectedVraFilePath = "C:\\logs\\a.dat";
-        $scope.recoveryVraFilePath = "C:\\logs\\b.dat";
+        $scope.protectedVraFilePath = "";
+        $scope.recoveryVraFilePath = "";
         $scope.sliderSensitivity = 5;
         $scope.Timer = null;
         $scope.options = {
