@@ -62,8 +62,8 @@ namespace ParseLogs
             pmaTimstampData.PmaRawFieldList.Add(ConstructFieldData(pmaRawEntity.RecoveryCpuPerc, "RecoveryCpuPerc"));
             pmaTimstampData.PmaRawFieldList.Add(ConstructFieldData(pmaRawEntity.RecoveryVraBufferUsagePerc, "RecoveryVraBufferUsagePerc"));
             pmaTimstampData.PmaRawFieldList.Add(ConstructFieldData(pmaRawEntity.HardeningRateMBs, "HardeningRateMBs"));
-            pmaTimstampData.PmaRawFieldList.Add(ConstructFieldData(pmaRawEntity.HardeningRateMBs, "JournalSizeMB"));
-            pmaTimstampData.PmaRawFieldList.Add(ConstructFieldData(pmaRawEntity.HardeningRateMBs, "ApplyRateMBs"));
+            pmaTimstampData.PmaRawFieldList.Add(ConstructFieldData(pmaRawEntity.JournalSizeMB, "JournalSizeMB"));
+            pmaTimstampData.PmaRawFieldList.Add(ConstructFieldData(pmaRawEntity.ApplyRateMBs, "ApplyRateMBs"));
             return pmaTimstampData;
         }
 
