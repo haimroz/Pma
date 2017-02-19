@@ -5,7 +5,7 @@
 
 const _timeFrame = 100;
 const _viewName = "viewName";
-const _pageSize = 100;
+const _pageSize = 1800;
 
 angular.module('myApp.main', ['ngRoute'])
     .config(['$routeProvider', function ($routeProvider) {
@@ -20,10 +20,10 @@ angular.module('myApp.main', ['ngRoute'])
         $scope.isPlayed = false;
         $scope.value = 0;
         $scope.showLoader = false;
-        $scope.currentIndexPage = 1;
+        $scope.currentIndexPage = 0;
         $scope.maxIndexPage = 0;
-        $scope.protectedVraFilePath = undefined;
-        $scope.recoveryVraFilePath = undefined;
+        $scope.protectedVraFilePath = "C:\\logs\\a.dat";
+        $scope.recoveryVraFilePath = "C:\\logs\\b.dat";
         $scope.sliderSensitivity = 5;
         $scope.Timer = null;
         $scope.options = {
@@ -44,21 +44,18 @@ angular.module('myApp.main', ['ngRoute'])
             callback: onDragSlider
         };
         $scope.Message = 'Timer paused';
+        $scope.currentTimeStamp = undefined;
+        $scope.showKb = false;
+        $scope.hideColumns = [];
 
-
-        $scope.showGotoKB = function () {
-            // if ($scope.data) {
-            //     if (!$scope.data[$scope.value][13]) return true;
-            // }
-            // return false;
-            return $scope.invalidTimeSlot;
-        };
         $scope.goToKB = function () {
             $window.open('https://sites.google.com/a/zerto.com/dev/home/zzz-deprecated-pages-1/vrastoragebottleneckkb');
         };
         $scope.toggleButton = function () {
-            $scope.isPlayed = !$scope.isPlayed;
-            $scope.isPlayed ? StartTimer() : StopTimer();
+            if($scope.data && $scope.value < $scope.options.to){
+                $scope.isPlayed = !$scope.isPlayed;
+                $scope.isPlayed ? StartTimer() : StopTimer();
+            }
         };
         $scope.onSliderSensitivityChanged = function () {
             if ($scope.Timer) {
@@ -84,7 +81,12 @@ angular.module('myApp.main', ['ngRoute'])
                     return;
                 }
             }
-            getDataFromServer($scope.protectedVraFilePath, $scope.recoveryVraFilePath, $scope.currentIndexPage).then(StopTimer);
+            StopTimer();
+            getDataFromServer($scope.protectedVraFilePath, $scope.recoveryVraFilePath, $scope.currentIndexPage);
+        };
+        $scope.onJumpToIndex = function () {
+            StopTimer();
+            getDataFromServer($scope.protectedVraFilePath, $scope.recoveryVraFilePath, $scope.currentIndexPage);
         };
 
         //Private
@@ -127,32 +129,31 @@ angular.module('myApp.main', ['ngRoute'])
             var result = [];
             data.forEach(function (timeSlot, index) {
                 var processedTimeSlot = [];
-                processedTimeSlot.push(timeSlot["TimeStamp"]);
+
                 timeSlot.PmaRawFieldList.forEach(function (item) {
                     processedTimeSlot.push(item.Value);
                 });
-
-                processedTimeSlot.push(timeSlot.IsValid);
 
                 if (!timeSlot.IsValid && !$scope.invalidTimeSlot) {
                     $scope.invalidTimeSlot = processedTimeSlot;
                     $scope.invalidTimeSlot_index = index;
                 }
+
+                processedTimeSlot.push(timeSlot.IsValid);
+                processedTimeSlot.push(timeSlot["TimeStamp"]);
                 result.push(processedTimeSlot);
             });
             return result;
         }
 
-        function onDragSlider(value, released) {
-            // useful when combined with 'realtime' option
-            // released it triggered when mouse up
-            console.log(value + " " + released);
-
+        function onDragSlider(value) {
             loadChart($scope.data[value], $scope.thresholds[value]);
         }
 
         function loadChart(elements, thresholds) {
-            $scope.chart.load({
+            $scope.currentTimeStamp = elements[elements.length-1];
+            $scope.showKB = !elements[elements.length-2];
+                $scope.chart.load({
                 columns: [
                     [_viewName].concat(elements)
                 ]
@@ -161,6 +162,8 @@ angular.module('myApp.main', ['ngRoute'])
         }
 
         function renderChart(elements, thresholds) {
+            $scope.currentTimeStamp = elements[elements.length-1];
+            $scope.showKB = !elements[elements.length-2];
             $scope.chart = c3.generate({
                 size: {
                     height: 400
@@ -192,7 +195,8 @@ angular.module('myApp.main', ['ngRoute'])
                     type: 'bar',
                     selection: {
                         draggable: true
-                    }
+                    },
+                    onclick:onClickColumn
                 },
                 bar: {
                     width: {ratio: 0.6}
@@ -206,7 +210,11 @@ angular.module('myApp.main', ['ngRoute'])
                         tick: {
                             width: 100,
                             rotate: 0, //axis labels rotation angle
-                            multiline: true
+                            multiline: true,
+                            padding: {
+                                left: 10,
+                                right: 10,
+                            }
                         },
                         height: 70
                     },
@@ -231,7 +239,7 @@ angular.module('myApp.main', ['ngRoute'])
 
         function drawChartBarLayers(thresholds) {
             // where to draw the target lines for each data point
-            var scalingFactors = ["0"].concat(thresholds);
+            var scalingFactors = thresholds;
 
             // svg layer for each bar series
             var barsLayers = $scope.chart.internal.main.selectAll('.' + c3.chart.internal.fn.CLASS.bars)[0];
@@ -247,9 +255,7 @@ angular.module('myApp.main', ['ngRoute'])
 
                 series.values.forEach(function (d, j) {
                     // highlight if over threshold
-                    if (d.x === 0) {
-                        return;
-                    }
+
                     if (d.value > scalingFactors[j])
                         d3.select(bars[j]).classed('crossed', true);
 
@@ -259,6 +265,12 @@ angular.module('myApp.main', ['ngRoute'])
                     else {
                         d3.select(bars[j]).classed('crossed', false);
                         d3.select(bars[j]).classed('equal', false);
+                    }
+
+                    if($scope.hideColumns[d.x]){
+                        d3.select(bars[j]).classed('hide-column', true);
+                    } else{
+                        d3.select(bars[j]).classed('hide-column', false);
                     }
 
                     // get the position for our target lines
@@ -283,15 +295,12 @@ angular.module('myApp.main', ['ngRoute'])
         }
 
         function StartTimer() {
-            //Set the Timer start message.
-            $scope.Message = "Timer started. ";
 
+            $scope.isPlayed = true;
             //Initialize the Timer to run every 1000 milliseconds i.e. one second.
             $scope.Timer = $interval(function () {
                 if ($scope.value >= $scope.options.to) {
                     StopTimer();
-                    $scope.isPlayed = !$scope.isPlayed;
-                    return;
                 } else {
                     $scope.value++;
                     loadChart($scope.data[$scope.value], $scope.thresholds[$scope.value]);
@@ -301,13 +310,24 @@ angular.module('myApp.main', ['ngRoute'])
 
         function StopTimer() {
 
-            //Set the Timer stop message.
-            $scope.Message = "Timer stopped.";
-
             //Cancel the Timer.
             if (angular.isDefined($scope.Timer)) {
                 $interval.cancel($scope.Timer);
                 $scope.Timer = null;
+                $scope.isPlayed = false;
             }
         }
+
+        function onClickColumn(event) {
+            $scope.hideColumns[event.x] = !$scope.hideColumns[event.x];
+            drawChartBarLayers($scope.thresholds[$scope.value]);
+        }
+
+        function init() {
+            $scope.hideColumns = [];
+            for(var i=0; i<11; i++){
+                $scope.hideColumns.push(false);
+            }
+        }
+        init();
     }]);

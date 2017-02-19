@@ -1,9 +1,8 @@
-.main__container {
-  position: absolute;
-  width: 100%;
-  top: 52px;
-  bottom: 0;
+body {
+  min-width: 1645px;
+}
 
+.main__container {
   .chart__container {
     height: 400px;
     width: 90%;
@@ -12,7 +11,7 @@
 
   .icons__container {
     width: 90%;
-    height: 100px;
+    height: 60px;
     display: flex;
     margin: 0 auto;
     justify-content: space-around;
@@ -20,51 +19,42 @@
     align-items: center;
     box-sizing: border-box;
     .icon__wrapper {
-      width: 100px;
-      height: 80px;
-      background-repeat: no-repeat;
+      width: 50px;
+      height: 50px;
       text-align: center;
       flex: 1;
       justify-content: center;
       align-items: center;
 
       > div {
-        width: 70px;
-        height: 80px;
+        height: 50px;
+        width: 50px;
         display: inline-block;
+        background-size: 50px 50px !important;
+        background-repeat: no-repeat !important;
       }
 
       .icon__storage {
         background: url("../assets/Storage.JPG");
-        background-position: -3px -3px;
       }
       .icon__storage-compression {
         background: url("../assets/Zipping.JPG");
-        background-position: -1px 4px;
       }
       .icon__cpu {
         background: url("../assets/CPU.JPG");
-        background-position: -2px -3px;
       }
       .icon__vra {
         background: url("../assets/Buffer.JPG");
-        background-position: -7px -1px;
       }
       .icon__network {
         background: url("../assets/Networking.JPG");
-        background-size: 70px 80px;
-        background-position: -2px 2px;
       }
       .icon__tcp {
         /*background: url("../assets/Queue.JPG");*/
         background: url("../assets/tcp_plug.png");
-        background-size: 80px 85px;
-        background-position: -3px 0px;
       }
       .icon__pipe {
         background: url("../assets/JournalPipe.JPG");
-        background-size: 80px 80px;
-        background-position: -7px -1px;
       }
     }
   }
@@ -109,21 +99,24 @@
     box-sizing: border-box;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: space-between;
 
-    > div {
-      width: 300px;
-      height: 50px;
-      line-height: 50px;
+    .action-item {
+      max-width: 300px;
+      height: 40px;
+      line-height: 40px;
       border-radius: 5px;
       font-weight: bold;
       text-align: center;
-      margin: 5px;
+      padding: 5px;
       cursor: pointer;
     }
-
-    .result-invalid {
-      background: red;
+    .time-stamp__container {
+      background: lightblue;
+      min-width: 200px;
+      span {
+        font-size: 14px;
+      }
     }
     .slider-sensitivity {
       background: lightgrey;
@@ -135,13 +128,22 @@
     }
     .pager-wrapper {
       background: lightgrey;
-      width: 600px;
+      max-width: 600px;
+      min-width: 400px;
       display: flex;
-      margin-left: 100px;
       justify-content: space-between;
+      margin-left: 30px;
+      margin-right: 30px;
+      text-align: center;
+      height: 50px;
 
       > div {
         flex: 1;
+      }
+
+      .page-picker-input {
+        width: 50px;
+        text-align: center;
       }
 
       .arrow-right {
@@ -173,6 +175,20 @@
         margin-top: -28px;
       }
 
+      .arrow-right:hover {
+        border-color: gray;
+        &:before {
+          border-left-color: gray;
+        }
+      }
+
+      .arrow-left:hover {
+        border-color: gray;
+        &:before {
+          border-right-color: gray;
+        }
+      }
+
       .arrow-left {
         line-height: 40px;
         position: relative;
@@ -202,16 +218,17 @@
         margin-top: -28px;
       }
 
-      .pager-info{
+      .pager-info {
         line-height: 50px;
-        color:black;
+        min-width: 180px;
+        color: black;
 
-        .info-big{
+        .info-big {
           font-size: 18px;
           font-weight: bold;
         }
 
-        .info-small{
+        .info-small {
           font-size: 10px;
         }
       }
@@ -261,14 +278,24 @@
     }
   }
 
-  .loader__container{
-    background: rgba(0,0,0,0.5);
-    position: absolute;
+  .loader__container {
+    background: rgba(0, 0, 0, 0.5);
+    position: fixed;
     width: 100%;
-    height:100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .result-invalid {
+    width: 500px;
+    text-align: center;
+    padding: 15px;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 auto;
+    background: red;
   }
 
   .c3 svg {
@@ -292,5 +319,8 @@
   }
   .equal {
     fill: yellow !important;
+  }
+  .hide-column {
+    opacity: 0.1 !important;
   }
 }
