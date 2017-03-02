@@ -15,9 +15,12 @@ namespace Ppa.Controllers
     public class PmaController : ApiController
     {
         //private readonly PmaRepository m_pmaRepository;
-        //private OrderedDictionary _mOrderedCache;
+        private static OrderedDictionary _mOrderedCache = _mOrderedCache = new OrderedDictionary(1);
+
         //private readonly Dictionary<RequestedBundleInfo, PmaInfo> m_cachedPma;
-        //private static readonly object _mLock = new object();
+        private static readonly object _mLock = new object();
+
+        
 
         public PmaController()
         {
@@ -36,23 +39,22 @@ namespace Ppa.Controllers
             Validate(protectedVraFilePath, recoveryVraFilePath, pageSize, pageNumber);
 
             RequestedBundleInfo bundleInfo = new RequestedBundleInfo(protectedVraFilePath, recoveryVraFilePath);
-            List<PmaTimstampData> allPmaData = ParseBundleLogs(bundleInfo);
-            PmaInfo pmaInfo = new PmaInfo(allPmaData.Count, allPmaData);
-            return GetRequestedPage(pmaInfo, pageSize, pageNumber-1);
 
-            //            lock (_mLock)
-            //            {
-            //                PmaInfo pmaInfo;
-            //                if (_mOrderedCache.Contains(bundleInfo))
-            //                {
-            //                    pmaInfo = (PmaInfo)_mOrderedCache[bundleInfo];
-            //                    return GetRequestedPage(pmaInfo, pageSize, pageNumber);
-            //                }
-            //                List<PmaTimstampData> allPmaData = ParseBundleLogs(bundleInfo);
-            //                pmaInfo = new PmaInfo(allPmaData.Count, allPmaData);
-            //                _mOrderedCache.Add(bundleInfo, pmaInfo);
-            //                return GetRequestedPage(pmaInfo, pageSize, pageNumber);
-            //            }
+            lock (_mLock)
+            {
+                PmaInfo pmaInfo;
+                if (_mOrderedCache.Contains(bundleInfo))
+                {
+                    pmaInfo = (PmaInfo)_mOrderedCache[bundleInfo];
+                    return GetRequestedPage(pmaInfo, pageSize, pageNumber - 1);
+                }
+                _mOrderedCache.Clear();
+                List<PmaTimstampData> allPmaData = ParseBundleLogs(bundleInfo);
+                pmaInfo = new PmaInfo(allPmaData.Count, allPmaData);
+                
+                _mOrderedCache.Add(bundleInfo, pmaInfo);
+                return GetRequestedPage(pmaInfo, pageSize, pageNumber - 1);
+            }
         }
 
         private void Validate(

@@ -64,31 +64,36 @@ namespace ParseLogs
             pmaTimstampData.PmaRawFieldList.Add(ConstructFieldData(pmaRawEntity.HardeningRateMBs, "HardeningRateMBs"));
             pmaTimstampData.PmaRawFieldList.Add(ConstructFieldData(pmaRawEntity.JournalSizeMB, "JournalSizeMB"));
             pmaTimstampData.PmaRawFieldList.Add(ConstructFieldData(pmaRawEntity.ApplyRateMBs, "ApplyRateMBs"));
+            pmaTimstampData.ComputeValidity();
             return pmaTimstampData;
         }
 
         private static PmaRawFieldData ConstructFieldData(object value, string fieldName)
         {
-            int threshold = 1000;
-            int isValid = 0;
+            int threshold = 1000;//make the threshold ineffective
+
             if (value.GetType() == typeof(double))
-            {
-                threshold = 1000;
-                isValid = 1;
                 if ((double)value <= 0)
-                {
                     value = 0.0;
-                }
-            }
-            else if (value.GetType() == typeof(int))
-            {
+            if (value.GetType() == typeof(int))
                 if ((int)value <= 0)
-                {
                     value = 0;
-                }
+
+            int isValid = 0;
+
+            if (fieldName.Equals("ProtectedCpuPerc"))
+                threshold = 85;
+            if (fieldName.Equals("ProtectedVraBufferUsagePerc"))
+                threshold = 80;
+            if (fieldName.Equals("ProtectedTcpBufferUsagePerc"))
+                threshold = 90;
+            if (fieldName.Equals("RecoveryTcpBufferUsagePerc"))
+                threshold = 80;
+            if (fieldName.Equals("RecoveryCpuPerc"))
                 threshold = 70;
-                isValid = Convert.ToInt32(value) < threshold ? 1 : 0;
-            }
+            if (fieldName.Equals("RecoveryVraBufferUsagePerc"))
+                threshold = 80;
+            isValid = Convert.ToInt32(value) < threshold ? 1 : 0;
 
             return new PmaRawFieldData(fieldName, value.ToString(), threshold.ToString(), isValid);
         }
