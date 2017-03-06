@@ -7,25 +7,26 @@ body {
   margin: 0 auto; }
 .main__container .icons__container {
   width: 90%;
-  height: 60px;
+  height: 40px;
   display: flex;
   margin: 0 auto;
   justify-content: space-around;
   padding-left: 50px;
   align-items: center;
-  box-sizing: border-box; }
+  box-sizing: border-box;
+  margin-top: -10px; }
   .main__container .icons__container .icon__wrapper {
-    width: 50px;
-    height: 50px;
+    width: 35px;
+    height: 35px;
     text-align: center;
     flex: 1;
     justify-content: center;
     align-items: center; }
     .main__container .icons__container .icon__wrapper > div {
-      height: 50px;
-      width: 50px;
+      height: 35px;
+      width: 35px;
       display: inline-block;
-      background-size: 50px 50px !important;
+      background-size: 35px 35px !important;
       background-repeat: no-repeat !important; }
     .main__container .icons__container .icon__wrapper .icon__storage {
       background: url("../assets/Storage.JPG"); }
@@ -234,6 +235,8 @@ body {
   shape-rendering: crispEdges; }
 .main__container .axis font {
   size: 32px; }
+.main__container .c3-axis-x text {
+  font-size: 11px; }
 .main__container .line {
   fill: none;
   stroke-width: 1.5px; }

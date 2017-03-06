@@ -22,8 +22,8 @@ angular.module('myApp.main', ['ngRoute'])
         $scope.showLoader = false;
         $scope.currentIndexPage = 1;
         $scope.maxIndexPage = 0;
-        $scope.protectedVraFilePath = "";
-        $scope.recoveryVraFilePath = "";
+        $scope.protectedVraFilePath = "C:\\logs\\a.dat";
+        $scope.recoveryVraFilePath = "C:\\logs\\b.dat";
         $scope.sliderSensitivity = 5;
         $scope.Timer = null;
         $scope.options = {
@@ -189,7 +189,7 @@ angular.module('myApp.main', ['ngRoute'])
                             'Recovery Vra Buffer Usage Perc',
                             'Hardening Rate MBs',
                             'Journal Size MB',
-                            'ApplyRateMBs'],
+                            'Apply Rate MBs'],
                         [_viewName].concat(elements)
                     ],
                     type: 'bar',
@@ -202,21 +202,18 @@ angular.module('myApp.main', ['ngRoute'])
                     width: {ratio: 0.6}
                 },
                 legend: {
-                    show: true
+                    show: false
                 },
                 axis: {
                     x: {
                         type: 'category',
                         tick: {
                             width: 100,
-                            rotate: 0, //axis labels rotation angle
-                            multiline: true,
-                            padding: {
-                                left: 10,
-                                right: 10,
-                            }
+                            fit:true,
+                            centered: false
                         },
-                        height: 70
+                        height: 50,
+                        label:"Segments"
                     },
                     y: {
                         padding: {
@@ -230,7 +227,8 @@ angular.module('myApp.main', ['ngRoute'])
                             max: 150,
                             count: 5
                         },
-                        max: 200
+                        max: 200,
+                        label:"Values"
                     }
                 }
             });
@@ -330,4 +328,5 @@ angular.module('myApp.main', ['ngRoute'])
             }
         }
         init();
+        $scope.onClickParseLogs();
     }]);
