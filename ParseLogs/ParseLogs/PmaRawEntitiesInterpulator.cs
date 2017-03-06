@@ -40,6 +40,7 @@ namespace ParseLogs
             PmaRawEntity pmaEntity = null;
             foreach (var rawEntity in rawList)
             {
+
                 if (interpolatedList.Count > 0 && HasTimeGap(interpolatedList.Last(), rawEntity))
                 {
                     FillTimeGaps(interpolatedList.Last().TimeStamp, rawEntity.TimeStamp.AddSeconds(-1), mesaurmentsKnownDataPoints,

@@ -76,7 +76,7 @@ namespace ParseLogs
                 RecoveryTcpBufferUsagePerc = ConvertTcpBufferUsageMBsToPerc(Convert.ToDouble(pmaLogData[headers[RecoveryTcpBufferUsageMBsHeader]])),
                 RecoveryCpuPerc = Convert.ToInt32(Convert.ToDouble(pmaLogData[headers[VraCpuPercHeader]])),
                 RecoveryVraBufferUsagePerc = Convert.ToInt32(Convert.ToDouble(pmaLogData[headers[RecoveryVraBufferUsagePercHeader]])),
-                HardeningRateMBs = Convert.ToDouble(pmaLogData[headers[HardeningRateMBsHeader]]),
+                HardeningRateMBs = 512 * Convert.ToDouble(pmaLogData[headers[HardeningRateMBsHeader]]),//compensate for zvm/logparser bug that treats the LBs as if were bytes
                 ApplyRateMBs = Convert.ToDouble(pmaLogData[headers[ApplyRateMBsHeader]])
             };
             return pmaRawEntity;
