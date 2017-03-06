@@ -84,7 +84,7 @@ namespace ParseLogs
             if (fieldName.Equals("ProtectedCpuPerc"))
                 threshold = 85;
             if (fieldName.Equals("ProtectedVraBufferUsagePerc"))
-                threshold = 80;
+                threshold = 73;
             if (fieldName.Equals("ProtectedTcpBufferUsagePerc"))
                 threshold = 90;
             if (fieldName.Equals("RecoveryTcpBufferUsagePerc"))
@@ -92,7 +92,7 @@ namespace ParseLogs
             if (fieldName.Equals("RecoveryCpuPerc"))
                 threshold = 70;
             if (fieldName.Equals("RecoveryVraBufferUsagePerc"))
-                threshold = 80;
+                threshold = 73;
             isValid = Convert.ToInt32(value) < threshold ? 1 : 0;
 
             return new PmaRawFieldData(fieldName, value.ToString(), threshold.ToString(), isValid);
